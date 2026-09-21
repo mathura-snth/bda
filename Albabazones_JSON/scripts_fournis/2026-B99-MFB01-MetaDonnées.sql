@@ -397,6 +397,10 @@ INSERT INTO META03_DD_CONSTRAINTS VALUES ('NS5100', 'TELEPHONE_FR_INTERNATIONAL'
 INSERT INTO META03_DD_CONSTRAINTS VALUES ('NS5101', 'TELEPHONE_FR_NATIONAL', 'A French telephone without international country code = Un téléphone français sans l''indicatif de l''international',                         
 'REGEXP_LIKE (COL++,''^[0][1-9][0-9]{8}$'')', ''); --'^[0][1-9][0-9]{8}$',
 
+INSERT INTO META03_DD_CONSTRAINTS VALUES ('NSTNI01', 'TELEPHONE_TN_INTERNATIONAL', 'A Tunisian telephone international',
+'REGEXP_LIKE (COL++,''^(([\+]|[0]{2})([2]{1}[1]{1}[6]{1}))[0-9]{8}$'')', '');
+
+
 -- Negative Constraints / Contraintes négatives INTER-COL++ONNES >>>> String Varchar, Char
 INSERT INTO META03_DD_CONSTRAINTS VALUES ('NS9200', 'INTER_COLUMNS', 'Conjonction/disjonction (AND/OR) de plusieurs conditions sur deux COLonnes A et B',                         
 '( (COL++1 = ''Madame'' AND COL2 IN (''2'', ''4'', ''6'')) OR (COL++1 = ''Monsieur'' AND COL++2 IN (''1'', ''3'', ''5'')) )', '');

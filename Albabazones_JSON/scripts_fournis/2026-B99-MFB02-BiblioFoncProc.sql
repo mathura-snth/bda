@@ -312,7 +312,7 @@ CREATE OR REPLACE FUNCTION F08_Min_Numerique  (Nom_COL IN VARCHAR2, NOMTAB IN VA
   Query    VARCHAR2(2000);
   min_num  NUMBER;
 BEGIN 
-	Query := 'SELECT MIN (LENGTH (SUBSTR(' || Nom_COL || ', regexp_instr('|| Nom_COL ||', ''[[:digit:]]*$''), LENGTH('|| Nom_COL ||') - regexp_instr('|| Nom_COL ||', ''[[:digit:]]*$'') + 1))) FROM ' || NOMTAB ;
+	Query := 'SELECT MIN(' || Nom_COL || ') FROM ' || NOMTAB;
      DBMS_OUTPUT.PUT_LINE(Query);  --- A corriger
 	 EXECUTE IMMEDIATE Query INTO min_num ;
     RETURN(min_num); 
@@ -422,7 +422,8 @@ CREATE OR REPLACE FUNCTION F15_VerifRegExpr(V_Valeur IN VARCHAR2, V_SubCategoryR
   RESULT  VARCHAR2(50);
   REGULAR VARCHAR2(250);
 BEGIN
-	SELECT CONTRAINTE INTO REGULAR FROM META03_DD_CONSTRAINTS WHERE SUBCATEGORY = V_SubCategoryRegex ;		
+	SELECT CONTRAINTE INTO REGULAR FROM META03_DD_CONSTRAINTS WHERE CATEGORY = V_SubCategoryRegex ;		
+  REGULAR := REGEXP_SUBSTR(REGULAR, '''([^'']+)''', 1, 1, NULL, 1);
 	SELECT CASE WHEN (SELECT COUNT(*) FROM DUAL 
 	       WHERE NOT REGEXP_LIKE (V_Valeur , REGULAR ))> 0 THEN 'FALSE' ELSE 'TRUE' END INTO RESULT FROM DUAL ;
     RETURN(RESULT);
@@ -430,10 +431,10 @@ END;
 /
 --Tests
 COLUMN resultat_verification FORMAT A30
-SELECT F15_VerifRegExpr('0555555555',   'TELEPHONE_FR_I') AS resultat_verification FROM DUAL;  -- T�l�phone de France international ?
-SELECT F15_VerifRegExpr('+33555555555', 'TELEPHONE_FR_N') AS resultat_verification FROM DUAL;  -- T�l�phone de France national ?
-SELECT F15_VerifRegExpr('+33655555555', 'TELEPHONE_FR_I') AS resultat_verification FROM DUAL;  -- T�l�phone de France international ?
-SELECT F15_VerifRegExpr('+21624801777', 'TELEPHONE_TN_I') AS resultat_verification FROM DUAL;  -- T�l�phone de Tunisie international ?
+SELECT F15_VerifRegExpr('0555555555',   'TELEPHONE_FR_INTERNATIONAL') AS resultat_verification FROM DUAL;  -- T�l�phone de France international ?
+SELECT F15_VerifRegExpr('+33555555555', 'TELEPHONE_FR_NATIONAL') AS resultat_verification FROM DUAL;  -- T�l�phone de France national ?
+SELECT F15_VerifRegExpr('+33655555555', 'TELEPHONE_FR_INTERNATIONAL') AS resultat_verification FROM DUAL;  -- T�l�phone de France international ?
+SELECT F15_VerifRegExpr('+21624801777', 'TELEPHONE_TN_INTERNATIONAL') AS resultat_verification FROM DUAL;  -- T�l�phone de Tunisie international ?
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
