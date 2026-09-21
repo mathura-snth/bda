@@ -1,10 +1,11 @@
+SET DEFINE OFF;
 -- ==== MFB =======================================================================================================================
--------- Université Sorbonne Paris Nord , Institut Galiée
--------- Master 2 Informatique (M2 EID2 = Exploration Informatique des Données et Décisionnel), Ingénieurs
+-------- Universitï¿½ Sorbonne Paris Nord , Institut Galiï¿½e
+-------- Master 2 Informatique (M2 EID2 = Exploration Informatique des Donnï¿½es et Dï¿½cisionnel), Ingï¿½nieurs
 -- ==== MFB =======================================================================================================================
--- Binome = Groupe de Travail N° xy  : Bxy (Exemple B01, B02,... B09, B10, B11...)
+-- Binome = Groupe de Travail Nï¿½ xy  : Bxy (Exemple B01, B02,... B09, B10, B11...)
 -- ==== MFB =======================================================================================================================
--- Numéro du Binôme (= GroupeDeTravail) --->>>> : Bxy
+-- Numï¿½ro du Binï¿½me (= GroupeDeTravail) --->>>> : Bxy
 -- NOM1 PRENOM1                         --->>>> : np1
 -- NOM2 PRENOM2                         --->>>> : np2
 
@@ -15,24 +16,24 @@
 
 -- ==== MFB =======================================================================================================================
 -- MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB MFB 
--- Date dernière mise à jour : 17 septembre 2026
--- Ce fichier contient les métadonnées : Data Dictionaries, Data Reports...
+-- Date derniï¿½re mise ï¿½ jour : 17 septembre 2026
+-- Ce fichier contient les mï¿½tadonnï¿½es : Data Dictionaries, Data Reports...
 -- Exemple d'application : Gestion des commandes et des factures de l'entreprise ALBABAZONES-CLICKANDCOLLECT
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
---   Auteur            : Dr. M. Faouzi BOUFARÈS, MCF-HDR Informatique
+--   Auteur            : Dr. M. Faouzi BOUFARï¿½S, MCF-HDR Informatique
 --   Page Web          : http://www.lipn.univ-paris13.fr/~boufares     
---   Lieu              : Université Sorbonne Paris Nord, Institut Galiée
+--   Lieu              : Universitï¿½ Sorbonne Paris Nord, Institut Galiï¿½e
 --                     : Laboratoire LIPN ; MSN         
 --   Dates             : 17/09/2026 -- 30/09/2027
 ----------------------------+++---------------------------------------------------
--------- Enseignant-Chercheur Responsable ; Créateur du cas   
--- M. Faouzi Boufarès,
--- Maître de Conférences en Informatique ; Habilité à Diriger des Recherches
--- Université Sorbonne Paris Nord
+-------- Enseignant-Chercheur Responsable ; Crï¿½ateur du cas   
+-- M. Faouzi Boufarï¿½s,
+-- Maï¿½tre de Confï¿½rences en Informatique ; Habilitï¿½ ï¿½ Diriger des Recherches
+-- Universitï¿½ Sorbonne Paris Nord
 -- Laboratory LIPN UMR CNRS 7030
--- 99 avenue Jean-Baptiste Clément
+-- 99 avenue Jean-Baptiste Clï¿½ment
 -- F-93430 Villetaneuse, France
 -- Office: B209
 -- Phone: [+33 1]/[01] 49 40 xy zt
@@ -46,26 +47,26 @@
 -- ==== MFB =======================================================================================================================
 ----==== DATA BASE, DATA WAREHOUSE, MASTER DATA, DATA LAKE, BIG DATA ====---------
 --   Structured data;      Semi-structured data;      NON-structured data
---   Données structurées ; Données Semi-structurées ; Données NON structurées
+--   Donnï¿½es structurï¿½es ; Donnï¿½es Semi-structurï¿½es ; Donnï¿½es NON structurï¿½es
 
 --   More semantics to better manage, use, exploit, explore and correct data
---   Plus de sémantique afin de mieux : 
---             gérer, utiliser, exploiter, explorer et corriger les données
+--   Plus de sï¿½mantique afin de mieux : 
+--             gï¿½rer, utiliser, exploiter, explorer et corriger les donnï¿½es
 -- ==== MFB =======================================================================================================================
 --   Nom du SGBD/DBMS  : ORACLE  (MySQL/MongoDB/PostGRES/SQLServer...)    
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
 -------- La Data ; The Data : Data Management & Machine Learning
--------- La Donnée e-s-t le monde du futur ; Les données et le monde de l'avenir
+-------- La Donnï¿½e e-s-t le monde du futur ; Les donnï¿½es et le monde de l'avenir
 -------- The Data is the world of the future ;  The Data and the future's world
 --       Think DIFFERENTLY, BIGGER and SMARTER ! The Excellence in Data Use !
 -- ==== MFB =======================================================================================================================
--------- Bases de Données Avancées = Advanced Databases (BDA)
--------- Entrepôts de Données      = Data Warehouses (DWH, EDON)
--------- Lacs de Données           = Data Lakes (LD, DL)
--------- Référentiel de Données    = Master Data (RD, MD)
--------- Directeur du projet       :  Dr. M. Faouzi Boufarès (MFB)
+-------- Bases de Donnï¿½es Avancï¿½es = Advanced Databases (BDA)
+-------- Entrepï¿½ts de Donnï¿½es      = Data Warehouses (DWH, EDON)
+-------- Lacs de Donnï¿½es           = Data Lakes (LD, DL)
+-------- Rï¿½fï¿½rentiel de Donnï¿½es    = Master Data (RD, MD)
+-------- Directeur du projet       :  Dr. M. Faouzi Boufarï¿½s (MFB)
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
@@ -76,27 +77,27 @@
 -- ETES-VOUS Un EXPERT EN DATA ??? Un DATA-LOGUE ??? Un Smart DATAT ??? Un SQL EXPERT ?   
 --                  MISSION IMPOSSIBLE OU POSSIBLE ????? !!!!!!!!!!!
 --   Votre mission, si vous l'acceptez, est : The Excellence in Data Use !
---   Si vous échouez, nous nierons avoir eu connaissance de vos agissements !
+--   Si vous ï¿½chouez, nous nierons avoir eu connaissance de vos agissements !
 
 --                  MISSION IMPOSSIBLE OU POSSIBLE ????? !!!!!!!!!!!
 --   Votre mission, si vous l'acceptez, est de : Nettoyer et manipluere la BD !
--->>>>>>>>> Détecter et Corriger... les anoamlies
+-->>>>>>>>> Dï¿½tecter et Corriger... les anoamlies
 -->>>>>>>>> Enrichir...             les nuls, les valeurs manquantes
--->>>>>>>>> Valider...              la normalisation et les dépendances fonctionnelles
+-->>>>>>>>> Valider...              la normalisation et les dï¿½pendances fonctionnelles
 -->>>>>>>>> Eliminer...             les doubles et les similaires
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
--- Data Management & Machine Learning = Gestion des Données & Apprentissage artificiel
+-- Data Management & Machine Learning = Gestion des Donnï¿½es & Apprentissage artificiel
 ----------------------------+++---------------------------------------------------
---   Data definition              - Défintion des données
---   Data Manipulation (DM)       - Manipulation de Données
---   Data Integration (DI)        - Intégration de Données
---   Master Data Management (MDM) - Gestion des Données de Référence
---   Data Quality Managment (DQM) - Gestion de la qualité des données
---   Data Cleaning                - Nettayage des données
+--   Data definition              - Dï¿½fintion des donnï¿½es
+--   Data Manipulation (DM)       - Manipulation de Donnï¿½es
+--   Data Integration (DI)        - Intï¿½gration de Donnï¿½es
+--   Master Data Management (MDM) - Gestion des Donnï¿½es de Rï¿½fï¿½rence
+--   Data Quality Managment (DQM) - Gestion de la qualitï¿½ des donnï¿½es
+--   Data Cleaning                - Nettayage des donnï¿½es
 --   Data deduplication           - Elimination des doubles et des similaires
---   Data Sicience                - Sicence des données
+--   Data Sicience                - Sicence des donnï¿½es
 -- ==== MFB =======================================================================================================================
 -- DBMS -- ETL -- MDM -- DI -- DQ -- ML -- DS
 -- Data Base Management System ; Extract-Transform-Load ; Master Data Managment
@@ -105,7 +106,7 @@
 -- ==== MFB =======================================================================================================================
 -- Big Data & Clound Computing : Think DIFFERENTLY, BIGGER and SMARTER !
 -- The Excellence in Data Use !
--- EID : L'Excellence dans l'Investigation des Données
+-- EID : L'Excellence dans l'Investigation des Donnï¿½es
 -- EID : Excellence in Data Investigation
 -- ==== MFB =======================================================================================================================
 
@@ -116,24 +117,24 @@
 -- ==== MFB =======================================================================================================================
 
 -- SMART DATA --->>> iDQMS = intelligent Data Quality Management System
--- Ingénierie des Données, Science des Données ; Data Engineering, Data Science
--- DATALOG : Ingénieur des Données ; Data Engineer ; Data Sci... Data Scientist
+-- Ingï¿½nierie des Donnï¿½es, Science des Donnï¿½es ; Data Engineering, Data Science
+-- DATALOG : Ingï¿½nieur des Donnï¿½es ; Data Engineer ; Data Sci... Data Scientist
 
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
 -- ==== MFB =======================================================================================================================
 
--- Problématique :  mieux gérer, utiliser, exploiter, explorer et corriger les données
+-- Problï¿½matique :  mieux gï¿½rer, utiliser, exploiter, explorer et corriger les donnï¿½es
 
---   Intégration de données hétérogènes
---   Traitement des anomalies éventuelles
+--   Intï¿½gration de donnï¿½es hï¿½tï¿½rogï¿½nes
+--   Traitement des anomalies ï¿½ventuelles
 --      Plusieurs types d'anomalies INTRA-COLONNE ; INTER-COLONNES ; INTER-LIGNES
---      Standardisation/homogénéisation de données hétérogènes
---      Traitement des valeurs invalides syntaxiquement et sémantiquement
+--      Standardisation/homogï¿½nï¿½isation de donnï¿½es hï¿½tï¿½rogï¿½nes
+--      Traitement des valeurs invalides syntaxiquement et sï¿½mantiquement
 --      Traitement des valeurs manquantes (nulles,NULL)
 --      Traitement des formes normales (1FN...)
---      Traitement des redondances sémantiques (Dépendances fonctionnelles)
+--      Traitement des redondances sï¿½mantiques (Dï¿½pendances fonctionnelles)
 --      Elimination des doubles et similaires
 
 -- ==== MFB =======================================================================================================================
@@ -149,7 +150,7 @@ SET SERVEROUTPUT ON;
 ----- Initialisations : le type/format de la date, la langue...
 -- ==== MFB =======================================================================================================================
 --  FORMATS de la date :
---  Format de la date : Jour/mois/année ; Permet d initialiser le FORMAT de la date jj/mm/aaaa
+--  Format de la date : Jour/mois/annï¿½e ; Permet d initialiser le FORMAT de la date jj/mm/aaaa
 --  Exemple  de date  : '19/06/2001' ; le format est 'DD/MM/YYYY'
 --  ALTER SESSION SET NLS_DATE_FORMAT = '???? HiHi HaHa' ; ???
 --  ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/YYYY';
@@ -168,22 +169,22 @@ ALTER SESSION SET NLS_LANGUAGE=ENGLISH;
 -- ==== MFB =======================================================================================================================
 SET SERVEROUTPUT ON;
 -- ==== MFB =======================================================================================================================
--- Bibliothèque des fonctions et des procédures 
+-- Bibliothï¿½que des fonctions et des procï¿½dures 
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
--- Bibliothèque des fonctions -- FONCTIONS -- -- FONCTIONS -- -- FONCTIONS -- -- FONCTIONS -- -- FONCTIONS -- 
--- Bibliothèque des fonctions : F01, F02, ...
+-- Bibliothï¿½que des fonctions -- FONCTIONS -- -- FONCTIONS -- -- FONCTIONS -- -- FONCTIONS -- -- FONCTIONS -- 
+-- Bibliothï¿½que des fonctions : F01, F02, ...
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
 -- Les Fonctions qui permettent de calculer plusieurs mesures (indicateurs) pour une DS
---= Manipulation intelligente des données : Les mesures/indicateurs de base à réaliser
--- Mesures pour une source de données (table) et pour chacune des colonnes
+--= Manipulation intelligente des donnï¿½es : Les mesures/indicateurs de base ï¿½ rï¿½aliser
+-- Mesures pour une source de donnï¿½es (table) et pour chacune des colonnes
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
--- M000 : Le nombre de lignes dans la source de données (une table)... !
+-- M000 : Le nombre de lignes dans la source de donnï¿½es (une table)... !
 -- M000 : Number of rows in the data source DS
 CREATE OR REPLACE FUNCTION F01_NombreDeLignes (NOMTAB IN VARCHAR2) RETURN NUMBER IS 
   Query    VARCHAR2(2000);
@@ -195,7 +196,7 @@ BEGIN
 END; --F01_NombreDeLignes
 /
 --Tests de la fonction F01_NombreDeLignes
-SELECT NombreDeLignes('DS') FROM DUAL;
+SELECT F01_NombreDeLignes('DS') FROM DUAL;
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
@@ -207,7 +208,7 @@ CREATE OR REPLACE FUNCTION F02_NombreDeNULLs (Nom_COL IN VARCHAR2, NOMTAB IN VAR
   CodificationDuNULL VARCHAR2(300);
   CodesNULL          VARCHAR2(500);
 BEGIN 
-  SELECT MISSINGVALUECODIFICATION INTO CodesNULL FROM DD_PARAMETRAGES ;
+  SELECT VALEUR_PARAM INTO CodesNULL FROM META01_DD_PARAMETRAGES WHERE ID_PARAMETRE = 'Param2';
   CodificationDuNULL := Nom_COL || ' IS NULL OR (' || Nom_COL || CodesNULL || ')';
   Query := 'SELECT COUNT (*) FROM ' || NOMTAB || ' WHERE ' || CodificationDuNULL ;
   --DBMS_OUTPUT.PUT_LINE(Query);
@@ -220,7 +221,7 @@ SELECT F02_NombreDeNULLs('COL04','DS') FROM DUAL;
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
--- M101 : Le nombre de valeurs présentes (valeurs non nulles) dans une colonne
+-- M101 : Le nombre de valeurs prï¿½sentes (valeurs non nulles) dans une colonne
 -- M101 : Number of NOT NULL values
 CREATE OR REPLACE FUNCTION F03_NombreDeNONNULLs (Nom_COL IN VARCHAR2, NOMTAB IN VARCHAR2) RETURN NUMBER IS 
   Query              VARCHAR2(2000);  
@@ -228,7 +229,7 @@ CREATE OR REPLACE FUNCTION F03_NombreDeNONNULLs (Nom_COL IN VARCHAR2, NOMTAB IN 
   CodificationDuNULL VARCHAR2(300);
   CodesNULL          VARCHAR2(300);
 BEGIN 
-  SELECT MISSINGVALUECODIFICATION INTO CodesNULL FROM DD_PARAMETRAGES ;
+  SELECT VALEUR_PARAM INTO CodesNULL FROM META01_DD_PARAMETRAGES WHERE ID_PARAMETRE = 'Param2' ;
   CodesNULL := ' NOT ' || CodesNULL;
   CodificationDuNULL := Nom_COL || ' IS NOT NULL OR (' || Nom_COL || CodesNULL || ')';
   Query := 'SELECT COUNT (*) FROM ' || NOMTAB || ' WHERE ' || CodificationDuNULL ;
@@ -242,7 +243,7 @@ SELECT F03_NombreDeNONNULLs('COL05','DS') FROM DUAL;
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
--- M102 : La longueur minimale des chaines de caractères dans une colonne
+-- M102 : La longueur minimale des chaines de caractï¿½res dans une colonne
 -- M102 : The minimum length of strings in a column
 CREATE OR REPLACE FUNCTION F04_MinCharactersCol (Nom_COL IN VARCHAR2, NOMTAB IN VARCHAR2) RETURN NUMBER IS 
   Query   VARCHAR2(2000);
@@ -258,7 +259,7 @@ SELECT F04_MinCharactersCol('COL07','DS') FROM DUAL;
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
--- M103 : La longueur maximale des chaines de caractères dans une colonne
+-- M103 : La longueur maximale des chaines de caractï¿½res dans une colonne
 -- M103 : The maximum length of strings in a column
 CREATE OR REPLACE FUNCTION F05_MaxCharactersCol (Nom_COL IN VARCHAR2, NOMTAB IN VARCHAR2) RETURN NUMBER IS 
   Query   VARCHAR2(2000);
@@ -274,7 +275,7 @@ SELECT F05_MaxCharactersCol('COL07','DS') FROM DUAL;
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
--- M104 : Le nombre de valeurs différentes dans une colonne
+-- M104 : Le nombre de valeurs diffï¿½rentes dans une colonne
 -- M104 : Number of DIFFERENT values
 CREATE OR REPLACE FUNCTION F06_NombreDeValDiff (Nom_COL IN VARCHAR2, NOMTAB IN VARCHAR2) RETURN NUMBER IS 
   Query     VARCHAR2(2000);
@@ -291,7 +292,7 @@ SELECT F06_NombreDeValDiff('COL11','DS') FROM DUAL;
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
--- M160 : La longueur moyenne des chaines de caractères dans une colonne
+-- M160 : La longueur moyenne des chaines de caractï¿½res dans une colonne
 -- M160 : The average length of strings in a column
 CREATE OR REPLACE FUNCTION F07_MoyCharactersCol  (Nom_COL IN VARCHAR2, NOMTAB IN VARCHAR2) RETURN NUMBER IS 
   Query     VARCHAR2(2000);
@@ -305,7 +306,7 @@ END; --F07_MoyCharactersCol
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
--- M161 : La valeur minimale des numériques dans une colonne
+-- M161 : La valeur minimale des numï¿½riques dans une colonne
 -- M161 : The minimum value of the numbers (numerics) in a column
 CREATE OR REPLACE FUNCTION F08_Min_Numerique  (Nom_COL IN VARCHAR2, NOMTAB IN VARCHAR2) RETURN NUMBER IS 
   Query    VARCHAR2(2000);
@@ -322,7 +323,7 @@ SELECT  F08_Min_Numerique('PVART','ARTICLES') FROM DUAL;
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
--- M162 : La valeur maximale des numériques dans une colonne
+-- M162 : La valeur maximale des numï¿½riques dans une colonne
 -- M162 : The maximum value of the numbers (numerics) in a column
 CREATE OR REPLACE FUNCTION F09_Max_Numerique (Nom_COL IN VARCHAR2, NOMTAB IN VARCHAR2) RETURN NUMBER IS 
   Query    VARCHAR2(2000);
@@ -337,7 +338,7 @@ END; --F09_Max_Numerique
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
--- M163 : La valeur moyenne des numériques dans une colonne
+-- M163 : La valeur moyenne des numï¿½riques dans une colonne
 -- M163 : The mean (average) value of the numbers (numerics) in a column
 CREATE OR REPLACE FUNCTION F10_Moy_Numerique (Nom_COL IN VARCHAR2, NOMTAB IN VARCHAR2) RETURN NUMBER IS
   Query    VARCHAR2(2000);
@@ -352,7 +353,7 @@ END; --F10_Moy_Numerique
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
--- M164 : La valeur médiane des numériques dans une colonne
+-- M164 : La valeur mï¿½diane des numï¿½riques dans une colonne
 -- M164 : The median value of the numbers (numerics) in a column
 CREATE OR REPLACE FUNCTION F11_Median_Numerique  (Nom_COL IN VARCHAR2, NOMTAB IN VARCHAR2) RETURN NUMBER IS 
   Query       VARCHAR2(2000);
@@ -366,7 +367,7 @@ END; --F11_Median_Numerique
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
--- M165 : La valeur de l'écart type des numériques dans une colonne
+-- M165 : La valeur de l'ï¿½cart type des numï¿½riques dans une colonne
 CREATE OR REPLACE FUNCTION F12_EcartType_Numerique  (Nom_COL IN VARCHAR2, NOMTAB IN VARCHAR2) RETURN NUMBER IS 
   Query          VARCHAR2(2000);
   ecartType_num  NUMBER(10,2);
@@ -394,7 +395,7 @@ END; --F13_Min_date
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
--- M167 : La valeur maximale des dates (la plus récente) dans une colonne
+-- M167 : La valeur maximale des dates (la plus rï¿½cente) dans une colonne
 -- M167 : Maximum value of dates (most recent) in a column
 CREATE OR REPLACE FUNCTION F14_Max_date (Nom_COL IN VARCHAR2, NOMTAB IN VARCHAR2) RETURN VARCHAR IS 
   Query   VARCHAR2(2000);
@@ -417,11 +418,11 @@ FROM DUAL;
 
 -- ==== MFB =======================================================================================================================
 CREATE OR REPLACE FUNCTION F15_VerifRegExpr(V_Valeur IN VARCHAR2, V_SubCategoryRegex IN VARCHAR2) RETURN VARCHAR2 IS
--- Fonction qui permet de dire si une valeur vérifie une expression régulière
+-- Fonction qui permet de dire si une valeur vï¿½rifie une expression rï¿½guliï¿½re
   RESULT  VARCHAR2(50);
   REGULAR VARCHAR2(250);
 BEGIN
-	SELECT REGULAREXPR INTO REGULAR FROM DD_REGULAREXPRESSIONS WHERE SUBCATEGORY = V_SubCategoryRegex ;		
+	SELECT CONTRAINTE INTO REGULAR FROM META03_DD_CONSTRAINTS WHERE SUBCATEGORY = V_SubCategoryRegex ;		
 	SELECT CASE WHEN (SELECT COUNT(*) FROM DUAL 
 	       WHERE NOT REGEXP_LIKE (V_Valeur , REGULAR ))> 0 THEN 'FALSE' ELSE 'TRUE' END INTO RESULT FROM DUAL ;
     RETURN(RESULT);
@@ -429,10 +430,10 @@ END;
 /
 --Tests
 COLUMN resultat_verification FORMAT A30
-SELECT F15_VerifRegExpr('0555555555',   'TELEPHONE_FR_I') AS resultat_verification FROM DUAL;  -- Téléphone de France international ?
-SELECT F15_VerifRegExpr('+33555555555', 'TELEPHONE_FR_N') AS resultat_verification FROM DUAL;  -- Téléphone de France national ?
-SELECT F15_VerifRegExpr('+33655555555', 'TELEPHONE_FR_I') AS resultat_verification FROM DUAL;  -- Téléphone de France international ?
-SELECT F15_VerifRegExpr('+21624801777', 'TELEPHONE_TN_I') AS resultat_verification FROM DUAL;  -- Téléphone de Tunisie international ?
+SELECT F15_VerifRegExpr('0555555555',   'TELEPHONE_FR_I') AS resultat_verification FROM DUAL;  -- Tï¿½lï¿½phone de France international ?
+SELECT F15_VerifRegExpr('+33555555555', 'TELEPHONE_FR_N') AS resultat_verification FROM DUAL;  -- Tï¿½lï¿½phone de France national ?
+SELECT F15_VerifRegExpr('+33655555555', 'TELEPHONE_FR_I') AS resultat_verification FROM DUAL;  -- Tï¿½lï¿½phone de France international ?
+SELECT F15_VerifRegExpr('+21624801777', 'TELEPHONE_TN_I') AS resultat_verification FROM DUAL;  -- Tï¿½lï¿½phone de Tunisie international ?
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
@@ -465,21 +466,21 @@ SELECT F16_TOWARDS_NUMBER('75013') FROM DUAL;
 -- ==== MFB =======================================================================================================================
 
 -- ==== MFB =======================================================================================================================
--- Bibliothèque des procédures -- PROCEDURES -- -- PROCEDURES -- -- PROCEDURES -- -- PROCEDURES -- -- PROCEDURES -- 
--- Bibliothèque des procédures : P01, P02, ...
+-- Bibliothï¿½que des procï¿½dures -- PROCEDURES -- -- PROCEDURES -- -- PROCEDURES -- -- PROCEDURES -- -- PROCEDURES -- 
+-- Bibliothï¿½que des procï¿½dures : P01, P02, ...
 -- ==== MFB =======================================================================================================================
 
 
 -- ==== MFB =======================================================================================================================
 CREATE OR REPLACE PROCEDURE P01_AFFICHAGECSV (NOMTAB VARCHAR2, ListeDesColonnes VARCHAR2) IS
--- La procédure P01_AFFICHAGECSV permet d'afficher le contenu d'une table(ListeDesColonnes) au format CSV avec le séparateur ;
+-- La procï¿½dure P01_AFFICHAGECSV permet d'afficher le contenu d'une table(ListeDesColonnes) au format CSV avec le sï¿½parateur ;
   Query               VARCHAR2(2000);
   LesColonnes         VARCHAR2(500);
-BEGIN -- Début de la procédure P01_AFFICHAGECSV
+BEGIN -- Dï¿½but de la procï¿½dure P01_AFFICHAGECSV
   LesColonnes    := REGEXP_REPLACE(ListeDesColonnes, '(,)', ' || '';'' || ');
   Query          := 'CREATE OR REPLACE VIEW VCSV(COLCSV) AS SELECT ' || LesColonnes || ' FROM ' || NOMTAB;
   EXECUTE IMMEDIATE Query;
-END; -- Fin de la procédure P01_AFFICHAGECSV
+END; -- Fin de la procï¿½dure P01_AFFICHAGECSV
 /
 --- MFB --- Tests !!! ???
 EXEC P01_AFFICHAGECSV('AnomaliesVisualization', 'COL01,COL02,COL03,COL04,COL05,COL06,COL07,COL08,COL09,COL10,COL11,COL12,COL13');
@@ -492,12 +493,12 @@ SELECT * FROM VCSV;
 
 -- ==== MFB =======================================================================================================================
 CREATE OR REPLACE PROCEDURE P02_CREERMAILMAG IS
--- La procédure P02_CREERMAILMAG permet de modifier la structure de la table MAGASINS en ajoutant la colonne MAILMAG
-BEGIN -- Début de la procédure P02_CREERMAILMAG
+-- La procï¿½dure P02_CREERMAILMAG permet de modifier la structure de la table MAGASINS en ajoutant la colonne MAILMAG
+BEGIN -- Dï¿½but de la procï¿½dure P02_CREERMAILMAG
   EXECUTE IMMEDIATE 'ALTER TABLE MAGASINS ADD MAILMAG VARCHAR2(50)';
   EXECUTE IMMEDIATE 'UPDATE MAGASINS SET MAILMAG=CONCAT(CONCAT(''bb'',nummag),''@gmail.com'')';
   COMMIT;
-END; -- Fin de la procédure P02_CREERMAILMAG
+END; -- Fin de la procï¿½dure P02_CREERMAILMAG
 /
 --- MFB --- Tests !!! ???
 EXEC P02_CREERMAILMAG;
@@ -507,46 +508,46 @@ EXEC P02_CREERMAILMAG;
 
 -- ==== MFB =======================================================================================================================
 -- ==== MFB =======================================================================================================================
---= Manipulation intelligente des données : Anomalies intercolonnes ==================== DEBUT ====================================
---= Les Dépendances Sémantiques ======       (-DF- ; -EQ- ; -LE- ; -GE-)  =========================================================
+--= Manipulation intelligente des donnï¿½es : Anomalies intercolonnes ==================== DEBUT ====================================
+--= Les Dï¿½pendances Sï¿½mantiques ======       (-DF- ; -EQ- ; -LE- ; -GE-)  =========================================================
 -- ==== MFB =======================================================================================================================
 /*
--- Etudes des liens sémantiques éventuels qui peuvent exister entre les colonnes :
--- PLusieurs types de liens sémantiques (SEMANTIC LINKS) peuvent exister entre les colonnes tels que :
--- les dépendances fonctionnelles --FD->, 
--- les relations d'ordre (inférieure --LT-> , égale --EQ-> , supérieure --GT->)
+-- Etudes des liens sï¿½mantiques ï¿½ventuels qui peuvent exister entre les colonnes :
+-- PLusieurs types de liens sï¿½mantiques (SEMANTIC LINKS) peuvent exister entre les colonnes tels que :
+-- les dï¿½pendances fonctionnelles --FD->, 
+-- les relations d'ordre (infï¿½rieure --LT-> , ï¿½gale --EQ-> , supï¿½rieure --GT->)
 
-Procédures et fonctions qui permettent de vérifier les dépendances sémantiques ( -DF- ; -EQ- ; -LE- ; -GE-) 
-qui peuvent éventuellement exister entre les colonnes d'une table telles que :
+Procï¿½dures et fonctions qui permettent de vï¿½rifier les dï¿½pendances sï¿½mantiques ( -DF- ; -EQ- ; -LE- ; -GE-) 
+qui peuvent ï¿½ventuellement exister entre les colonnes d'une table telles que :
 
-- les dépendances fonctionnelles           -DF-
+- les dï¿½pendances fonctionnelles           -DF-
   Exemples : 
     Col_i -DF- Col_j                  The-LEFT-column determines functionally The-RIGHT-column
    (Col_p+Col_q+...) -DF- Col_k       The-LEFT-columns determine functionally The-RIGHT-column
   
-- les dépendances d'ordre (= égalité)       -EQ-     
+- les dï¿½pendances d'ordre (= ï¿½galitï¿½)       -EQ-     
   Exemple : 
     Col_i -EQ- Col_j                  The left column is equal to the right column
 	
-- les dépendances d'ordre (<= infériorité)  -LE-     
+- les dï¿½pendances d'ordre (<= infï¿½rioritï¿½)  -LE-     
   Exemple : 
     Col_i -LE- Col_j                  The left column is less than or equal to the right column
 	
-- les dépendances d'ordre (>= supériorité)  -GE-     
+- les dï¿½pendances d'ordre (>= supï¿½rioritï¿½)  -GE-     
   Exemple : 
     Col_i -GE- Col_j                  The left column is greater than or equal to the right column
 
 Remarque : 
-La NON vérification ou la vérification de certaines de ces dépendances sémantiques
+La NON vï¿½rification ou la vï¿½rification de certaines de ces dï¿½pendances sï¿½mantiques
 peut impliquer des anomalies dans la table !
 
-Remplir la méta-table (les méta-données) de nom DR_SemanticDependencies
-Avec pour la colonne COL1 : p% égal (1-X/Y)%
+Remplir la mï¿½ta-table (les mï¿½ta-donnï¿½es) de nom DR_SemanticDependencies
+Avec pour la colonne COL1 : p% ï¿½gal (1-X/Y)%
 X=    SELECT SUM(NBROCC) FROM VERIFDF WHERE NBROCC > 1;	
 Y=    SELECT COUNT(*) FROM TABLACONTROLER ;	
 
 -- ==== MFB =======================================================================================================================
---=  Exemple de Rapport à établir pour les dépendances sémantiques entre les colonnes d'une table:
+--=  Exemple de Rapport ï¿½ ï¿½tablir pour les dï¿½pendances sï¿½mantiques entre les colonnes d'une table:
 
 --DR_SemanticDependencies
 --+--------------+---------------------+-------------+------------+
@@ -556,12 +557,12 @@ Y=    SELECT COUNT(*) FROM TABLACONTROLER ;
 --+  COL1        +   -DF-              +  COL2       + p1 %       +
 --+  COL1        +   -DF-              +  COL5       + p2 %       +
 --+  COL2        +   -DF-              +  COL5       + p3 %       +
---+  COL1+COL2   +   -DF-              +  COL5       + p4 %       + -- Cette ligne peut être déduite !
+--+  COL1+COL2   +   -DF-              +  COL5       + p4 %       + -- Cette ligne peut ï¿½tre dï¿½duite !
 --+--------------+---------------------+-------------+------------+
 */
 -- ==== MFB =======================================================================================================================
---= Manipulation intelligente des données : Anomalies intercolonnes ==================== FIN ======================================
---= Les Dépendances Sémantiques ======       (-DF- ; -EQ- ; -LE- ; -GE-)  =========================================================
+--= Manipulation intelligente des donnï¿½es : Anomalies intercolonnes ==================== FIN ======================================
+--= Les Dï¿½pendances Sï¿½mantiques ======       (-DF- ; -EQ- ; -LE- ; -GE-)  =========================================================
 -- ==== MFB =======================================================================================================================
 
 
@@ -569,7 +570,7 @@ Y=    SELECT COUNT(*) FROM TABLACONTROLER ;
 
 -- ==== MFB =======================================================================================================================
 /*
-Le Sport est générateur de confiance !
+Le Sport est gï¿½nï¿½rateur de confiance !
                                       $"   *.      
               mfbmfbmfbmfb             \J $&learning J
                    dwh                     4r  "
@@ -593,20 +594,20 @@ Le Sport est générateur de confiance !
 -- ==== MFB =======================================================================================================================
 -- Les dictons du jour !
 --
--- Aujourd'hui, j'arrête de fumer : Le TABAC t'ABAT
--- Fumer nuit grâvement à ta santé et à celle de ton entourage
+-- Aujourd'hui, j'arrï¿½te de fumer : Le TABAC t'ABAT
+-- Fumer nuit grï¿½vement ï¿½ ta santï¿½ et ï¿½ celle de ton entourage
 --
 -- M   T   Dents  ;  SMILE and the World SMILES with you !
 --
 -- MANGER + MANGER = GROSSIR (??? M, A, N, G, E, R, O, S, S, I)
 --
 -- Manger & Bouger, 
--- Pour votre santé mangez 5 fruits et légumes par jour
--- Pour votre santé ne mangez pas trop gras, trop salé, trop sucré
--- Pour votre santé faites une activité physique régulière
--- Pour votre santé faites 30 mn de marche par jour
--- Pour votre santé faites des BD !!!
+-- Pour votre santï¿½ mangez 5 fruits et lï¿½gumes par jour
+-- Pour votre santï¿½ ne mangez pas trop gras, trop salï¿½, trop sucrï¿½
+-- Pour votre santï¿½ faites une activitï¿½ physique rï¿½guliï¿½re
+-- Pour votre santï¿½ faites 30 mn de marche par jour
+-- Pour votre santï¿½ faites des BD !!!
 --
--- Dr. M. Faouzi Boufarès
+-- Dr. M. Faouzi Boufarï¿½s
 
 -- ==== MFB =======================================================================================================================

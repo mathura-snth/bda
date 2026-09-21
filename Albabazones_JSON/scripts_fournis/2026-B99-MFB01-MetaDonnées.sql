@@ -1,4 +1,5 @@
-﻿-- ==== MFB =======================================================================================================================
+﻿SET DEFINE OFF;
+-- ==== MFB =======================================================================================================================
 -------- Université Sorbonne Paris Nord , Institut Galiée
 -------- Master 2 Informatique (M2 EID2 = Exploration Informatique des Données et Décisionnel), Ingénieurs
 -- ==== MFB =======================================================================================================================
@@ -1116,5 +1117,3 @@ INSERT INTO DS VALUES ('CLEMENT', 'Clémence', '11 novembre 2011', 'Barcelone', 
 INSERT INTO DS VALUES ('CLEMENT', 'clemence', '2011-novembre-11', NULL, 'Espagne', 'F', 'A+', '1,11m', '13000g', '', 'fcb-clement@yahoo.fr');
 COMMIT;
 SELECT * FROM DS;
-
-SELECT table_name FROM user_tables;
