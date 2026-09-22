@@ -509,6 +509,28 @@ END; -- Fin de la proc�dure P02_CREERMAILMAG
 /
 EXEC P02_CREERMAILMAG;
 -- ==== MFB =======================================================================================================================
+CREATE OR REPLACE PROCEDURE P03_AFFICHAGEJSON (NOMTAB VARCHAR2, ListeDesColonnes VARCHAR2)
+AUTHID CURRENT_USER
+IS
+-- La procédure P03_AFFICHAGEJSON permet d'afficher le contenu d'une table(ListeDesColonnes) au format JSON global
+  Query               VARCHAR2(2000);
+  LesColonnes         VARCHAR2(1000);
+BEGIN -- Début de la procédure P03_AFFICHAGEJSON
+  -- On prépare toujours les paires "Clé" VALUE Valeur
+  LesColonnes    := REGEXP_REPLACE(ListeDesColonnes, '([^,]+)', '''\1'' VALUE \1');
+  
+  -- On encapsule le JSON_OBJECT dans le JSON_ARRAYAGG
+  Query          := 'CREATE OR REPLACE VIEW VJSON(COLJSON) AS SELECT JSON_ARRAYAGG(JSON_OBJECT(' || LesColonnes || ') RETURNING CLOB ) FROM ' || NOMTAB;
+  
+  EXECUTE IMMEDIATE Query;
+END; -- Fin de la procédure P03_AFFICHAGEJSON
+/
+
+EXEC P03_AFFICHAGEJSON('CLIENTS', 'CODCLI,CIVCLI,NOMCLI,PRENCLI,CATCLI');
+SELECT * FROM VJSON;
+
+EXEC P03_AFFICHAGEJSON('MAGASINS', 'NUMMAG,NOMMAG,TELMAG,ADRNUMMAG,ADRRUEMAG,ADRCPMAG,ADRVILLEMAG,ADRPAYSMAG');
+SELECT * FROM VJSON;
 
 -- ==== MFB =======================================================================================================================
 
