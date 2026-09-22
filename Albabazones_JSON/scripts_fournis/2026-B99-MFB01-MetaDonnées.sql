@@ -1121,3 +1121,4 @@ INSERT INTO DS VALUES ('CLEMENT', 'Clémence', '11 novembre 2011', 'Barcelone', 
 INSERT INTO DS VALUES ('CLEMENT', 'clemence', '2011-novembre-11', NULL, 'Espagne', 'F', 'A+', '1,11m', '13000g', '', 'fcb-clement@yahoo.fr');
 COMMIT;
 SELECT * FROM DS;
+SELECT * FROM ARTICLES;

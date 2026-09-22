@@ -312,7 +312,7 @@ CREATE OR REPLACE FUNCTION F08_Min_Numerique  (Nom_COL IN VARCHAR2, NOMTAB IN VA
   Query    VARCHAR2(2000);
   min_num  NUMBER;
 BEGIN 
-	Query := 'SELECT MIN(' || Nom_COL || ') FROM ' || NOMTAB;
+	Query := 'SELECT MIN (' || Nom_COL || ') FROM ' || NOMTAB ;
      DBMS_OUTPUT.PUT_LINE(Query);  --- A corriger
 	 EXECUTE IMMEDIATE Query INTO min_num ;
     RETURN(min_num); 
@@ -329,7 +329,7 @@ CREATE OR REPLACE FUNCTION F09_Max_Numerique (Nom_COL IN VARCHAR2, NOMTAB IN VAR
   Query    VARCHAR2(2000);
   max_num  NUMBER;
 BEGIN 
-	Query := 'SELECT MAX (LENGTH (SUBSTR(' || Nom_COL || ', regexp_instr('|| Nom_COL ||', ''[[:digit:]]*$''), LENGTH('|| Nom_COL ||') - regexp_instr('|| Nom_COL ||', ''[[:digit:]]*$'') + 1))) FROM ' || NOMTAB ;
+	Query := 'SELECT MAX (' || Nom_COL || ') FROM ' || NOMTAB ;
          DBMS_OUTPUT.PUT_LINE(Query);  --- A corriger
 	EXECUTE IMMEDIATE Query INTO max_num ;
     RETURN(max_num); 
@@ -344,7 +344,7 @@ CREATE OR REPLACE FUNCTION F10_Moy_Numerique (Nom_COL IN VARCHAR2, NOMTAB IN VAR
   Query    VARCHAR2(2000);
   avg_num  NUMBER(10,2);
 BEGIN 
-	Query := 'SELECT AVG (LENGTH (SUBSTR(' || Nom_COL || ', regexp_instr('|| Nom_COL ||', ''[[:digit:]]*$''), LENGTH('|| Nom_COL ||') - regexp_instr('|| Nom_COL ||', ''[[:digit:]]*$'') + 1))) FROM ' || NOMTAB ;
+	Query := 'SELECT AVG (' || Nom_COL || ') FROM ' || NOMTAB ;
          DBMS_OUTPUT.PUT_LINE(Query);  --- A corriger
 	EXECUTE IMMEDIATE Query INTO avg_num ;
     RETURN(avg_num); 
@@ -359,7 +359,7 @@ CREATE OR REPLACE FUNCTION F11_Median_Numerique  (Nom_COL IN VARCHAR2, NOMTAB IN
   Query       VARCHAR2(2000);
   median_num  NUMBER(10,2);
 BEGIN 
-	Query := 'SELECT MEDIAN (LENGTH (SUBSTR(' || Nom_COL || ', regexp_instr('|| Nom_COL ||', ''[[:digit:]]*$''), LENGTH('|| Nom_COL ||') - regexp_instr('|| Nom_COL ||', ''[[:digit:]]*$'') + 1)))  FROM ' || NOMTAB ;
+	Query := 'SELECT MEDIAN (' || Nom_COL || ') FROM ' || NOMTAB ;
     EXECUTE IMMEDIATE Query INTO median_num ;
     RETURN(median_num); 
 END; --F11_Median_Numerique
@@ -372,8 +372,7 @@ CREATE OR REPLACE FUNCTION F12_EcartType_Numerique  (Nom_COL IN VARCHAR2, NOMTAB
   Query          VARCHAR2(2000);
   ecartType_num  NUMBER(10,2);
 BEGIN 
-    Query := 'SELECT STDDEV (LENGTH (SUBSTR(' || Nom_COL || ', regexp_instr('|| Nom_COL ||', 
-	''[[:digit:]]*$''), LENGTH('|| Nom_COL ||') - regexp_instr('|| Nom_COL ||', ''[[:digit:]]*$'') + 1)))  FROM ' || NOMTAB ;
+	Query := 'SELECT STDDEV (' || Nom_COL || ') FROM ' || NOMTAB ;
     EXECUTE IMMEDIATE Query INTO ecartType_num ;
     RETURN(ecartType_num); 
 END; --F12_EcartType_Numerique
@@ -409,10 +408,10 @@ END; --F14_Max_date
 -- ==== MFB =======================================================================================================================
 --Tests des fonctions
 SELECT
-F06_NombreDeValDiff('COL01','DS'), F07_MoyCharactersCol('COL01','DS'), 
-F08_Min_Numerique('COL01','DS'), F09_Max_Numerique('COL01','DS'), F10_Moy_Numerique('COL01','DS'), 
-F11_Median_Numerique('COL01','DS'), F12_EcartType_Numerique('COL01','DS'), 
-F13_Min_date('COL03','DS'), F14_Max_date('COL03','DS')
+F06_NombreDeValDiff('PVART','ARTICLES'), F07_MoyCharactersCol('PVART','ARTICLES'), 
+F08_Min_Numerique('PVART','ARTICLES'), F09_Max_Numerique('PVART','ARTICLES'), F10_Moy_Numerique('PVART','ARTICLES'), 
+F11_Median_Numerique('PVART','ARTICLES'), F12_EcartType_Numerique('PVART','ARTICLES'), 
+F13_Min_date('PVART','ARTICLES'), F14_Max_date('PVART','ARTICLES')
 FROM DUAL;
 -- ==== MFB =======================================================================================================================
 
