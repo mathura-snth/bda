@@ -509,6 +509,8 @@ END; -- Fin de la proc�dure P02_CREERMAILMAG
 /
 EXEC P02_CREERMAILMAG;
 -- ==== MFB =======================================================================================================================
+
+-- ==== MFB =======================================================================================================================
 CREATE OR REPLACE PROCEDURE P03_AFFICHAGEJSON (NOMTAB VARCHAR2, ListeDesColonnes VARCHAR2)
 AUTHID CURRENT_USER
 IS
@@ -521,7 +523,6 @@ BEGIN -- Début de la procédure P03_AFFICHAGEJSON
   
   -- On encapsule le JSON_OBJECT dans le JSON_ARRAYAGG
   Query          := 'CREATE OR REPLACE VIEW VJSON(COLJSON) AS SELECT JSON_ARRAYAGG(JSON_OBJECT(' || LesColonnes || ') RETURNING CLOB ) FROM ' || NOMTAB;
-  
   EXECUTE IMMEDIATE Query;
 END; -- Fin de la procédure P03_AFFICHAGEJSON
 /
