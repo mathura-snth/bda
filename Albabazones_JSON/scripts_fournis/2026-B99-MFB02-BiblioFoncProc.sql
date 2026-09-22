@@ -408,10 +408,10 @@ END; --F14_Max_date
 -- ==== MFB =======================================================================================================================
 --Tests des fonctions
 SELECT
-F06_NombreDeValDiff('PVART','ARTICLES'), F07_MoyCharactersCol('PVART','ARTICLES'), 
+F06_NombreDeValDiff('COL01','DS'), F07_MoyCharactersCol('COL01','DS'), 
 F08_Min_Numerique('PVART','ARTICLES'), F09_Max_Numerique('PVART','ARTICLES'), F10_Moy_Numerique('PVART','ARTICLES'), 
 F11_Median_Numerique('PVART','ARTICLES'), F12_EcartType_Numerique('PVART','ARTICLES'), 
-F13_Min_date('PVART','ARTICLES'), F14_Max_date('PVART','ARTICLES')
+F13_Min_date('COL03','DS'), F14_Max_date('COL03','DS')
 FROM DUAL;
 -- ==== MFB =======================================================================================================================
 
@@ -472,18 +472,21 @@ SELECT F16_TOWARDS_NUMBER('75013') FROM DUAL;
 
 
 -- ==== MFB =======================================================================================================================
-CREATE OR REPLACE PROCEDURE P01_AFFICHAGECSV (NOMTAB VARCHAR2, ListeDesColonnes VARCHAR2) IS
+CREATE OR REPLACE PROCEDURE P01_AFFICHAGECSV (NOMTAB VARCHAR2, ListeDesColonnes VARCHAR2)
+AUTHID CURRENT_USER
+IS
 -- La proc�dure P01_AFFICHAGECSV permet d'afficher le contenu d'une table(ListeDesColonnes) au format CSV avec le s�parateur ;
   Query               VARCHAR2(2000);
   LesColonnes         VARCHAR2(500);
 BEGIN -- D�but de la proc�dure P01_AFFICHAGECSV
   LesColonnes    := REGEXP_REPLACE(ListeDesColonnes, '(,)', ' || '';'' || ');
-  Query          := 'CREATE OR REPLACE VIEW VCSV(COLCSV) AS SELECT ' || LesColonnes || ' FROM ' || NOMTAB;
+  Query          := 'CREATE OR REPLACE VIEW VCSV(COLCSV) AS SELECT ' || LesColonnes ||  ' FROM ' || NOMTAB;
   EXECUTE IMMEDIATE Query;
 END; -- Fin de la proc�dure P01_AFFICHAGECSV
 /
+
 --- MFB --- Tests !!! ???
-EXEC P01_AFFICHAGECSV('AnomaliesVisualization', 'COL01,COL02,COL03,COL04,COL05,COL06,COL07,COL08,COL09,COL10,COL11,COL12,COL13');
+EXEC P01_AFFICHAGECSV('DS', 'COL01,COL02,COL03,COL04,COL05,COL06,COL07,COL08,COL09,COL10,COL11');
 SELECT * FROM VCSV;
 EXEC P01_AFFICHAGECSV('CLIENTS', 'CODCLI,CIVCLI,NOMCLI,PRENCLI,CATCLI');
 SELECT * FROM VCSV;
@@ -494,13 +497,16 @@ SELECT * FROM VCSV;
 -- ==== MFB =======================================================================================================================
 CREATE OR REPLACE PROCEDURE P02_CREERMAILMAG IS
 -- La proc�dure P02_CREERMAILMAG permet de modifier la structure de la table MAGASINS en ajoutant la colonne MAILMAG
+exist       VARCHAR2(500);
 BEGIN -- D�but de la proc�dure P02_CREERMAILMAG
-  EXECUTE IMMEDIATE 'ALTER TABLE MAGASINS ADD MAILMAG VARCHAR2(50)';
-  EXECUTE IMMEDIATE 'UPDATE MAGASINS SET MAILMAG=CONCAT(CONCAT(''bb'',nummag),''@gmail.com'')';
-  COMMIT;
+  SELECT COUNT(TABLE_NAME) INTO exist FROM USER_TABLES  WHERE TABLE_NAME = 'MAGASINS';
+  IF exist = 1 THEN 
+    EXECUTE IMMEDIATE 'ALTER TABLE MAGASINS ADD MAILMAG VARCHAR2(50)';
+    EXECUTE IMMEDIATE 'UPDATE MAGASINS SET MAILMAG=CONCAT(CONCAT(''bb'',nummag),''@gmail.com'')';
+    COMMIT;
+  END IF;
 END; -- Fin de la proc�dure P02_CREERMAILMAG
 /
---- MFB --- Tests !!! ???
 EXEC P02_CREERMAILMAG;
 -- ==== MFB =======================================================================================================================
 
