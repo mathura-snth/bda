@@ -1,13 +1,17 @@
 SET DEFINE OFF;
 -- ==== MFB =======================================================================================================================
--------- Universit� Sorbonne Paris Nord , Institut Gali�e
--------- Master 2 Informatique (M2 EID2 = Exploration Informatique des Donn�es et D�cisionnel), Ing�nieurs
+-------- Université Sorbonne Paris Nord , Institut Galiée
+-------- Master 2 Informatique (M2 EID2 = Exploration Informatique des Données et Décisionnel), Ingénieurs
 -- ==== MFB =======================================================================================================================
--- Binome = Groupe de Travail N� xy  : Bxy (Exemple B01, B02,... B09, B10, B11...)
+-- Binome = Groupe de Travail N° 03  : B03 (Exemple B01, B02,... B09, B10, B11...)
 -- ==== MFB =======================================================================================================================
--- Num�ro du Bin�me (= GroupeDeTravail) --->>>> : Bxy
--- NOM1 PRENOM1                         --->>>> : np1
--- NOM2 PRENOM2                         --->>>> : np2
+-- Numéro du Binôme (= GroupeDeTravail) --->>>> : B03
+-- SANTHALINGAM Mathura                 --->>>> : np1
+-- PARAKARAN Vidur                      --->>>> : np2
+-- BEN SALEM Tesnime                    --->>>> : np3
+-- CHARAF Hassan                        --->>>> : np4
+-- BENAMARA Amine                       --->>>> : np5
+
 
 -- ====>>> Vos fichiers sql devront s'appeler : Bxy-NomDuFichier.sql            (NomDuFichier = MetaDon)
 -- ==== MFB =======================================================================================================================

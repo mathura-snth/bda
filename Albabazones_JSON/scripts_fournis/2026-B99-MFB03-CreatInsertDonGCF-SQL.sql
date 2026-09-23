@@ -3,11 +3,15 @@
 -------- Université Sorbonne Paris Nord , Institut Galiée
 -------- Master 2 Informatique (M2 EID2 = Exploration Informatique des Données et Décisionnel), Ingénieurs
 -- ==== MFB =======================================================================================================================
--- Binome = Groupe de Travail N° xy  : Bxy (Exemple B01, B02,... B09, B10, B11...)
+-- Binome = Groupe de Travail N° 03  : B03 (Exemple B01, B02,... B09, B10, B11...)
 -- ==== MFB =======================================================================================================================
--- Numéro du Binôme (= GroupeDeTravail) --->>>> : Bxy
--- NOM1 PRENOM1                         --->>>> : np1
--- NOM2 PRENOM2                         --->>>> : np2
+-- Numéro du Binôme (= GroupeDeTravail) --->>>> : B03
+-- SANTHALINGAM Mathura                 --->>>> : np1
+-- PARAKARAN Vidur                      --->>>> : np2
+-- BEN SALEM Tesnime                    --->>>> : np3
+-- CHARAF Hassan                        --->>>> : np4
+-- BENAMARA Amine                       --->>>> : np5
+
 
 -- ====>>> Vos fichiers sql devront s'appeler : Bxy-NomDuFichier.sql            (NomDuFichier = MetaDon)
 -- ==== MFB =======================================================================================================================
@@ -1372,37 +1376,102 @@ Le Sport est générateur de confiance !
 -- Affichage au format JSON des données + appels à la procédure P03_AFFICHAGEJSON
 -- ==== MFB =======================================================================================================================
 
-SELECT 'Liste des client.e.s de l''entreprise ALBABAZONES-CLICKANDCOLLECT' AS CLIENT_E_S FROM DUAL;
-SELECT
-JSON_ARRAYAGG(
-	JSON_OBJECT(
-	'CODCLI' VALUE CODCLI,
-	'CIVCLI' VALUE CIVCLI,
-	'NOMCLI' VALUE NOMCLI,
-	'PRENCLI' VALUE PRENCLI,
-	'CATCLI' VALUE CATCLI
-) RETURNING CLOB )
-FROM CLIENTS;
+-- ============================================================
+-- Génère le JSON imbriqué (clients -> commandes -> lignes -> article)
+-- directement depuis Oracle avec JSON_OBJECT / JSON_ARRAYAGG.
+-- À exécuter APRÈS avoir chargé le fichier 2026-B99-MFB03-CreatInsertDonGCF-SQL.sql
+-- ============================================================
 
-SELECT 
-JSON_ARRAYAGG (
-    JSON_OBJECT (
-        'NUMMAG' VALUE NUMMAG,
-        'NOMMAG' VALUE NOMMAG,
-        'TELMAG' VALUE TELMAG,
-        'ADRNUMMAG' VALUE ADRNUMMAG,
-        'ADRRUEMAG' VALUE ADRRUEMAG,
-        'ADRCPMAG' VALUE ADRCPMAG,
-        'ADRVILLEMAG' VALUE ADRVILLEMAG,
-        'ADRPAYSMAG' VALUE ADRPAYSMAG,
-        'CONTINENTMAG' VALUE CONTINENTMAG,
-        'SURFACEMAG' VALUE SURFACEMAG
-    ) RETURNING CLOB 
-)
-FROM MAGASINS;
+SELECT JSON_OBJECT(
+    'entreprise' VALUE 'ALBABAZONES-CLICKANDCOLLECT',
+    'clients' VALUE (
+        SELECT JSON_ARRAYAGG(
+            JSON_OBJECT(
+                'codeClient' VALUE c.CODCLI,
+                'civilite'   VALUE c.CIVCLI,
+                'nom'        VALUE c.NOMCLI,
+                'prenom'     VALUE c.PRENCLI,
+                'categorie'  VALUE c.CATCLI,
+                'adresse' VALUE JSON_OBJECT(
+                    'numero'      VALUE c.ADNCLI,
+                    'rue'         VALUE c.ADRCLI,
+                    'codePostal'  VALUE c.CPCLI,
+                    'ville'       VALUE c.VILCLI,
+                    'pays'        VALUE c.PAYSCLI
+                    RETURNING CLOB
+                ),
+                'email'       VALUE c.MAILCLI,
+                'telephone'   VALUE c.TELCLI,
+                'genre'       VALUE c.GENRECLI,
+                'commandes' VALUE (
+                    SELECT JSON_ARRAYAGG(
+                        JSON_OBJECT(
+                            'numCommande'  VALUE co.NUMCOM,
+                            'dateCommande' VALUE co.DATCOM,
+                            'lignesCommande' VALUE (
+                                SELECT JSON_ARRAYAGG(
+                                    JSON_OBJECT(
+                                        'refArticle'            VALUE d.REFART,
+                                        'quantiteCommandee'     VALUE d.QTCOM,
+                                        'prixUnitaireCommande'  VALUE d.PUART,
+                                        'remise'                VALUE d.REMISE,
+                                        'article' VALUE JSON_OBJECT(
+                                            'refArt'         VALUE a.REFART,
+                                            'nomArt'         VALUE a.NOMART,
+                                            'prixVente'      VALUE a.PVART,
+                                            'quantiteStock'  VALUE a.QSART,
+                                            'prixAchat'      VALUE a.PAART
+                                            RETURNING CLOB
+                                        )
+                                        RETURNING CLOB
+                                    )
+                                    RETURNING CLOB
+                                )
+                                FROM DETAILCOM d
+                                JOIN ARTICLES a ON a.REFART = d.REFART
+                                WHERE d.NUMCOM = co.NUMCOM
+                            )
+                            RETURNING CLOB
+                        )
+                        RETURNING CLOB
+                    )
+                    FROM COMMANDES co
+                    WHERE co.CODCLI = c.CODCLI
+                )
+                RETURNING CLOB
+            )
+            RETURNING CLOB
+        )
+        FROM CLIENTS c
+    ),
+    'magasins' VALUE (
+        SELECT JSON_ARRAYAGG(
+            JSON_OBJECT(
+                'numMagasin' VALUE m.NUMMAG,
+                'nom'        VALUE m.NOMMAG,
+                'telephone'  VALUE m.TELMAG,
+                'adresse' VALUE JSON_OBJECT(
+                    'numero'      VALUE m.ADRNUMMAG,
+                    'rue'         VALUE m.ADRRUEMAG,
+                    'codePostal'  VALUE m.ADRCPMAG,
+                    'ville'       VALUE m.ADRVILLEMAG,
+                    'pays'        VALUE m.ADRPAYSMAG
+                    RETURNING CLOB
+                ),
+                'continent'  VALUE m.CONTINENTMAG,
+                'surfaceM2'  VALUE m.SURFACEMAG
+                RETURNING CLOB
+            )
+            RETURNING CLOB
+        )
+        FROM MAGASINS m
+    )
+    RETURNING CLOB
+) AS RESULTAT_JSON
+FROM DUAL;
 
 SELECT 'Liste des client.e.s via P03_AFFICHAGEJSON' AS CLIENT_E_S FROM DUAL;
-EXEC P03_AFFICHAGEJSON('CLIENTS', 'CODCLI,CIVCLI,NOMCLI,PRENCLI,CATCLI,ADNCLI,ADRCLI,CPCLI,VILCLI,PAYSCLI,MAILCLI,TELCLI,DATNAISCLI,DPREMCONTACTCLI,OBSCLI, REMCLI, GENRECLI');
+EXEC P03_AFFICHAGEJSON('CLIENTS', 'CODCLI,CIVCLI,NOMCLI,PRENCLI,CATCLI,ADNCLI,ADRCLI,CPCLI,VILCLI,PAYSCLI,MAILCLI,TELCLI,DATNAISCLI,DPREMCONTACTCLI,OBSCLI,REMCLI,GENRECLI');
 SELECT * FROM VJSON;
 
 SELECT 'Liste des magasins via P03_AFFICHAGEJSON' AS MAGASINS FROM DUAL;

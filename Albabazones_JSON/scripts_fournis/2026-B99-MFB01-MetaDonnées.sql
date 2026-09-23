@@ -3,11 +3,15 @@
 -------- Université Sorbonne Paris Nord , Institut Galiée
 -------- Master 2 Informatique (M2 EID2 = Exploration Informatique des Données et Décisionnel), Ingénieurs
 -- ==== MFB =======================================================================================================================
--- Binome = Groupe de Travail N° xy  : Bxy (Exemple B01, B02,... B09, B10, B11...)
+-- Binome = Groupe de Travail N° 03  : B03 (Exemple B01, B02,... B09, B10, B11...)
 -- ==== MFB =======================================================================================================================
--- Numéro du Binôme (= GroupeDeTravail) --->>>> : Bxy
--- NOM1 PRENOM1                         --->>>> : np1
--- NOM2 PRENOM2                         --->>>> : np2
+-- Numéro du Binôme (= GroupeDeTravail) --->>>> : B03
+-- SANTHALINGAM Mathura                 --->>>> : np1
+-- PARAKARAN Vidur                      --->>>> : np2
+-- BEN SALEM Tesnime                    --->>>> : np3
+-- CHARAF Hassan                        --->>>> : np4
+-- BENAMARA Amine                       --->>>> : np5
+
 
 -- ====>>> Vos fichiers sql devront s'appeler : Bxy-NomDuFichier.sql            (NomDuFichier = MetaDon)
 -- ==== MFB =======================================================================================================================
@@ -1120,5 +1124,57 @@ INSERT INTO DS VALUES ('CLEMENT', 'Clémence', '11 novembre 2011', 'Barcelone', 
 INSERT INTO DS VALUES ('CLEMENT', 'Clémence', '11 novembre 2011', 'Barcelone', 'Espagne', 'F', 'A+', '1,11m', '13000g', '', 'fcb-clement@yahoo.fr');
 INSERT INTO DS VALUES ('CLEMENT', 'clemence', '2011-novembre-11', NULL, 'Espagne', 'F', 'A+', '1,11m', '13000g', '', 'fcb-clement@yahoo.fr');
 COMMIT;
+
+-- ==== MFB =======================================================================================================================
+-- Table nettoyée (sauf dates)
+-- ==== MFB =======================================================================================================================
+
+UPDATE DS
+SET COL01 = UPPER(COL01), 
+    
+    COL05 = (SELECT NOMPAYSFRANCAIS FROM META0002_DDVS_PAYSCONTINENT WHERE SOUNDEX(UPPER(NOMPAYSFRANCAIS)) = SOUNDEX(UPPER(COL05))),
+    
+    COL06 = CASE
+        WHEN REGEXP_LIKE(UPPER(COL06),REGEXP_SUBSTR((SELECT CONTRAINTE FROM META03_DD_CONSTRAINTS WHERE IDCONSTRAINT = 'NS3102'), '''([^'']+)''', 1, 1, NULL, 1))
+            THEN COL06
+        ELSE NULL
+    END,
+    COL07 = CASE 
+        WHEN REGEXP_LIKE(UPPER(COL07),REGEXP_SUBSTR((SELECT CONTRAINTE FROM META03_DD_CONSTRAINTS WHERE CATEGORY = 'BLOOD_GROUP'), '''([^'']+)''', 1, 1, NULL, 1))
+        THEN UPPER(COL07)
+    END,
+
+    COL08 = CASE 
+        WHEN REGEXP_SUBSTR(COL08, '[a-zA-Z]+$') = 'm' 
+            THEN TO_NUMBER(REGEXP_SUBSTR(COL08, '[0-9]+([,.][0-9]+)?')) * 100
+        WHEN REGEXP_SUBSTR(COL08, '[a-zA-Z]+$') = 'mm'
+            THEN TO_NUMBER(REGEXP_SUBSTR(COL08, '[0-9]+([,.][0-9]+)?')) / 10
+        ELSE TO_NUMBER(REGEXP_SUBSTR(COL08, '[0-9]+([,.][0-9]+)?'))
+    END,
+
+    COL09 = CASE 
+        WHEN REGEXP_SUBSTR(COL09, '[a-zA-Z]+$') = 'g' 
+            THEN TO_NUMBER(REGEXP_SUBSTR(COL09, '[0-9]+([,.][0-9]+)?')) / 1000
+        WHEN REGEXP_SUBSTR(COL09, '[a-zA-Z]+$') LIKE 'K%'  OR REGEXP_SUBSTR(COL09, '[a-zA-Z]+$') LIKE 'k%'
+            THEN TO_NUMBER(REGEXP_SUBSTR(COL09, '[0-9]+([,.][0-9]+)?'))
+        ELSE NULL
+    END,
+
+    COL10 = CASE 
+        WHEN REGEXP_LIKE(COL10,REGEXP_SUBSTR((SELECT CONTRAINTE FROM META03_DD_CONSTRAINTS WHERE CATEGORY = 'TELEPHONE_FR_INTERNATIONAL'), '''([^'']+)''', 1, 1, NULL, 1))
+            THEN COL10
+        WHEN REGEXP_LIKE(COL10,REGEXP_SUBSTR((SELECT CONTRAINTE FROM META03_DD_CONSTRAINTS WHERE CATEGORY = 'TELEPHONE_FR_NATIONAL'), '''([^'']+)''', 1, 1, NULL, 1))
+            THEN COL10
+        WHEN REGEXP_LIKE(COL10,REGEXP_SUBSTR((SELECT CONTRAINTE FROM META03_DD_CONSTRAINTS WHERE CATEGORY = 'TELEPHONE_TN_INTERNATIONAL'), '''([^'']+)''', 1, 1, NULL, 1))
+            THEN COL10
+        ELSE NULL
+    END,
+    
+    COL11 = CASE 
+        WHEN REGEXP_LIKE(COL11,REGEXP_SUBSTR((SELECT CONTRAINTE FROM META03_DD_CONSTRAINTS WHERE CATEGORY = 'EMAIL'), '''([^'']+)''', 1, 1, NULL, 1))
+            THEN COL11
+        ELSE NULL
+    END;
+
 SELECT * FROM DS;
 SELECT * FROM ARTICLES;
