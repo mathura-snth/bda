@@ -1318,188 +1318,120 @@ ALTER TABLE CLIENTS_TEST MODIFY GENRECLI VARCHAR2(100);
 
 ALTER TABLE CLIENTS_TEST DROP CONSTRAINT CK_CLIENTS_TEST_CATCLI;
 
-UPDATE CLIENTS_TEST
-SET CODCLI = CODCLI || '(<?!1ANOMALY>)'
-WHERE NOT (RTRIM(LTRIM(REGEXP_REPLACE(CODCLI, '( ){2,}', ' '))) = CODCLI)
-  AND CODCLI NOT LIKE '%(<?!1ANOMALY>)%'; 
+DECLARE
+    v_sql VARCHAR2(32767);
+    v_conditions VARCHAR2(32767);
+    v_constraint_expr META03_DD_CONSTRAINTS.CONTRAINTE%TYPE;
+    v_constraint_id VARCHAR2(20);
+    v_num_constraints NUMBER;
+BEGIN
+    -- Parcours de chaque colonne définie dans META04 (Intra-colonne) pour CLIENTS
+    FOR r_col IN (SELECT COLUMNNAME, NEGCONSTRAINTSINTRACOL 
+                  FROM META04_DD_DATASTRUCTURES1 
+                  WHERE DATASOURCENAME = 'CLIENTS' 
+                    AND NEGCONSTRAINTSINTRACOL IS NOT NULL) 
+    LOOP
+        v_conditions := '';
+        -- Compter le nombre de contraintes séparées par le tiret '-'
+        v_num_constraints := REGEXP_COUNT(r_col.NEGCONSTRAINTSINTRACOL, '-') + 1;
+        
+        FOR i IN 1..v_num_constraints LOOP
+            -- Extraire l'ID de la contrainte (ex: NS2510)
+            v_constraint_id := REGEXP_SUBSTR(r_col.NEGCONSTRAINTSINTRACOL, '[^-]+', 1, i);
+            
+            BEGIN
+                -- Récupérer la Regex / condition SQL dans META03
+                SELECT CONTRAINTE INTO v_constraint_expr 
+                FROM META03_DD_CONSTRAINTS 
+                WHERE IDCONSTRAINT = v_constraint_id;
+                
+                -- Remplacer le mot-clé générique 'COL++' par le nom de la colonne
+                v_constraint_expr := REPLACE(v_constraint_expr, 'COL++', r_col.COLUMNNAME);
+                
+                -- Concaténer les conditions avec un ' AND '
+                IF v_conditions IS NULL THEN
+                    v_conditions := v_constraint_expr;
+                ELSE
+                    v_conditions := v_conditions || ' AND ' || v_constraint_expr;
+                END IF;
+            EXCEPTION
+                WHEN NO_DATA_FOUND THEN NULL;
+            END;
+        END LOOP;
+        
+        -- Si des conditions existent, on construit et exécute dynamiquement l'UPDATE
+        IF v_conditions IS NOT NULL THEN
+            v_sql := 'UPDATE CLIENTS_TEST ' ||
+                     'SET ' || r_col.COLUMNNAME || ' = ' || r_col.COLUMNNAME || ' || ''(<?!1ANOMALY>)'' ' ||
+                     'WHERE NOT (' || v_conditions || ') ' ||
+                     'AND ' || r_col.COLUMNNAME || ' NOT LIKE ''%(<?!1ANOMALY>)%'' ' ||
+                     'AND ' || r_col.COLUMNNAME || ' IS NOT NULL';
+            
+            EXECUTE IMMEDIATE v_sql;
+        END IF;
+    END LOOP;
+    COMMIT;
+END;
+/
 
-UPDATE CLIENTS_TEST
-SET CIVCLI = CIVCLI || '(<?!1ANOMALY>)'
-WHERE NOT (REGEXP_LIKE (CIVCLI,'Madame|Mademoiselle|Monsieur'))
-  AND CIVCLI NOT LIKE '%(<?!1ANOMALY>)%';
-
-UPDATE CLIENTS_TEST
-SET MAILCLI = MAILCLI || '(<?!1ANOMALY>)'
-WHERE NOT (
-      RTRIM(LTRIM(REGEXP_REPLACE(MAILCLI, '( ){2,}', ' '))) = MAILCLI
-  AND REGEXP_LIKE (MAILCLI,'^[A-Za-z]+[A-Za-z0-9.]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$')
-)
-  AND MAILCLI NOT LIKE '%(<?!1ANOMALY>)%';
-
-UPDATE CLIENTS_TEST
-SET NOMCLI = NOMCLI || '(<?!1ANOMALY>)'
-WHERE NOT (
-      RTRIM(LTRIM(REGEXP_REPLACE(NOMCLI, '( ){2,}', ' '))) = NOMCLI -- NS0001 (Espaces superflus)
-  AND REGEXP_LIKE (NOMCLI,'^[[:alpha:]-'' ]+$') -- NS2510
-  AND NOMCLI = UPPER(NOMCLI) -- NS2600
-  AND UPPER(REGEXP_COUNT(UPPER(NOMCLI), 'A{3,}|B{3,}|C{3,}|D{3,}|E{3,}|F{3,}|G{3,}|H{3,}|I{3,}|J{3,}|K{3,}|L{3,}|M{3,}|N{3,}|O{3,}|P{3,}|Q{3,}|R{3,}|S{3,}|T{3,}|U{3,}|V{3,}|W{3,}|X{3,}|Y{3,}|Z{3,}|É{3,}|È{3,}')) < 1 -- NS2700
-)
-  AND NOMCLI NOT LIKE '%(<?!1ANOMALY>)%';
-
-UPDATE CLIENTS_TEST
-SET PRENCLI = PRENCLI || '(<?!1ANOMALY>)'
-WHERE NOT (
-       REGEXP_LIKE(PRENCLI, '^[[:alpha:]]+$')
-   AND PRENCLI = INITCAP(PRENCLI)
-)
-AND PRENCLI NOT LIKE '%(<?!1ANOMALY>)%';
-  
-COMMIT;
-
-UPDATE CLIENTS_TEST
-SET CATCLI = CATCLI || '(<?!1ANOMALY>)'
-WHERE NOT (REGEXP_LIKE(CATCLI, '^[1-9]$'))
-  AND CATCLI NOT LIKE '%(<?!1ANOMALY>)%';
-
-UPDATE CLIENTS_TEST
-SET ADNCLI = ADNCLI || '(<?!1ANOMALY>)'
-WHERE NOT (REGEXP_LIKE(ADNCLI, '^[0-9]+( Bis| Ter)?$'))
-  AND ADNCLI NOT LIKE '%(<?!1ANOMALY>)%';
-
-UPDATE CLIENTS_TEST
-SET ADRCLI = ADRCLI || '(<?!1ANOMALY>)'
-WHERE NOT (
-      ADRCLI = UPPER(ADRCLI)
-  AND UPPER(REGEXP_COUNT(UPPER(ADRCLI), 'A{3,}|B{3,}|C{3,}|D{3,}|E{3,}|F{3,}|G{3,}|H{3,}|I{3,}|J{3,}|K{3,}|L{3,}|M{3,}|N{3,}|O{3,}|P{3,}|Q{3,}|R{3,}|S{3,}|T{3,}|U{3,}|V{3,}|W{3,}|X{3,}|Y{3,}|Z{3,}|É{3,}|È{3,}')) < 1
-  AND REGEXP_LIKE(UPPER(ADRCLI), '^[RUE|BOULEVARD|AVENUE|QUAI|IMPASSE|PONT|PLACE|SQUARE|ALLEE|ALLÉE|ALLEES|ALLÉES|VOIE|MONTEE|MONTÉE|ESPLANADE|ROUTE|VOIRIE|CITE|CITÉ|CHEMIN|PARVIS][a-zA-Z-'' ]+$')
-)
-  AND ADRCLI NOT LIKE '%(<?!1ANOMALY>)%';
-
-UPDATE CLIENTS_TEST
-SET CPCLI = CPCLI || '(<?!1ANOMALY>)'
-WHERE NOT (REGEXP_LIKE(CPCLI, '^(\d){5}$'))
-  AND CPCLI NOT LIKE '%(<?!1ANOMALY>)%';
-
-UPDATE CLIENTS_TEST
-SET VILCLI = VILCLI || '(<?!1ANOMALY>)'
-WHERE NOT (
-      REGEXP_LIKE(VILCLI, '^[[:alpha:]-'' ]+$')
-  AND VILCLI = UPPER(VILCLI)
-  AND UPPER(REGEXP_COUNT(UPPER(VILCLI), 'A{3,}|B{3,}|C{3,}|D{3,}|E{3,}|F{3,}|G{3,}|H{3,}|I{3,}|J{3,}|K{3,}|L{3,}|M{3,}|N{3,}|O{3,}|P{3,}|Q{3,}|R{3,}|S{3,}|T{3,}|U{3,}|V{3,}|W{3,}|X{3,}|Y{3,}|Z{3,}|É{3,}|È{3,}')) < 1
-  AND (RTRIM(LTRIM(REGEXP_REPLACE(VILCLI, '( ){2,}', ' '))) = VILCLI)
-)
-  AND VILCLI NOT LIKE '%(<?!1ANOMALY>)%';
-
-UPDATE CLIENTS_TEST
-SET PAYSCLI = PAYSCLI || '(<?!1ANOMALY>)'
-WHERE NOT (
-      REGEXP_LIKE(PAYSCLI, '^[[:alpha:]- ]+$')
-  AND PAYSCLI = UPPER(PAYSCLI)
-  AND UPPER(REGEXP_COUNT(UPPER(PAYSCLI), 'A{3,}|B{3,}|C{3,}|D{3,}|E{3,}|F{3,}|G{3,}|H{3,}|I{3,}|J{3,}|K{3,}|L{3,}|M{3,}|N{3,}|O{3,}|P{3,}|Q{3,}|R{3,}|S{3,}|T{3,}|U{3,}|V{3,}|W{3,}|X{3,}|Y{3,}|Z{3,}|É{3,}|È{3,}')) < 1
-  AND (RTRIM(LTRIM(REGEXP_REPLACE(PAYSCLI, '( ){2,}', ' '))) = PAYSCLI)
-
-)
-  AND PAYSCLI NOT LIKE '%(<?!1ANOMALY>)%';
-
-UPDATE CLIENTS_TEST
-SET TELCLI = TELCLI || '(<?!1ANOMALY>)'
-WHERE NOT (REGEXP_LIKE(TELCLI, '^(([\+]|[0]{2})([3]{2}))[1-9]([0-9]{8})$'))
-  AND TELCLI NOT LIKE '%(<?!1ANOMALY>)%';
-
-UPDATE CLIENTS_TEST
-SET GENRECLI = GENRECLI || '(<?!1ANOMALY>)'
-WHERE NOT (REGEXP_LIKE(GENRECLI, 'F|M'))
-  AND GENRECLI NOT LIKE '%(<?!1ANOMALY>)%';
-
-COMMIT;
-
-UPDATE CLIENTS_TEST
-SET CPCLI = CPCLI || '(<?!2ANOMALY>)',
-    VILCLI = VILCLI || '(<?!2ANOMALY>)'
-WHERE CPCLI LIKE '75%' 
-  AND (VILCLI IS NULL OR UPPER(VILCLI) NOT LIKE 'PARIS%')
-  AND CPCLI NOT LIKE '%(<?!2ANOMALY>)%'
-  AND (VILCLI IS NULL OR VILCLI NOT LIKE '%(<?!2ANOMALY>)%');
-
-COMMIT;
-
-SELECT * FROM CLIENTS_TEST;
-
-
-SELECT 'CODCLI' AS NOM_COLONNE,
-       SUM(CASE WHEN CODCLI LIKE '%(<?!1ANOMALY>)%' THEN 1 ELSE 0 END) AS NBR_1ANOMALY,
-       SUM(CASE WHEN CODCLI LIKE '%(<?!2ANOMALY>)%' THEN 1 ELSE 0 END) AS NBR_2ANOMALY
-FROM CLIENTS_TEST
-UNION ALL
-SELECT 'CIVCLI',
-       SUM(CASE WHEN CIVCLI LIKE '%(<?!1ANOMALY>)%' THEN 1 ELSE 0 END),
-       SUM(CASE WHEN CIVCLI LIKE '%(<?!2ANOMALY>)%' THEN 1 ELSE 0 END)
-FROM CLIENTS_TEST
-UNION ALL
-SELECT 'NOMCLI',
-       SUM(CASE WHEN NOMCLI LIKE '%(<?!1ANOMALY>)%' THEN 1 ELSE 0 END),
-       SUM(CASE WHEN NOMCLI LIKE '%(<?!2ANOMALY>)%' THEN 1 ELSE 0 END)
-FROM CLIENTS_TEST
-UNION ALL
-SELECT 'PRENCLI',
-       SUM(CASE WHEN PRENCLI LIKE '%(<?!1ANOMALY>)%' THEN 1 ELSE 0 END),
-       SUM(CASE WHEN PRENCLI LIKE '%(<?!2ANOMALY>)%' THEN 1 ELSE 0 END)
-FROM CLIENTS_TEST
-UNION ALL
-SELECT 'CATCLI',
-       SUM(CASE WHEN CATCLI LIKE '%(<?!1ANOMALY>)%' THEN 1 ELSE 0 END),
-       SUM(CASE WHEN CATCLI LIKE '%(<?!2ANOMALY>)%' THEN 1 ELSE 0 END)
-FROM CLIENTS_TEST
-UNION ALL
-SELECT 'ADNCLI',
-       SUM(CASE WHEN ADNCLI LIKE '%(<?!1ANOMALY>)%' THEN 1 ELSE 0 END),
-       SUM(CASE WHEN ADNCLI LIKE '%(<?!2ANOMALY>)%' THEN 1 ELSE 0 END)
-FROM CLIENTS_TEST
-UNION ALL
-SELECT 'ADRCLI',
-       SUM(CASE WHEN ADRCLI LIKE '%(<?!1ANOMALY>)%' THEN 1 ELSE 0 END),
-       SUM(CASE WHEN ADRCLI LIKE '%(<?!2ANOMALY>)%' THEN 1 ELSE 0 END)
-FROM CLIENTS_TEST
-UNION ALL
-SELECT 'CPCLI',
-       SUM(CASE WHEN CPCLI LIKE '%(<?!1ANOMALY>)%' THEN 1 ELSE 0 END),
-       SUM(CASE WHEN CPCLI LIKE '%(<?!2ANOMALY>)%' THEN 1 ELSE 0 END)
-FROM CLIENTS_TEST
-UNION ALL
-SELECT 'VILCLI',
-       SUM(CASE WHEN VILCLI LIKE '%(<?!1ANOMALY>)%' THEN 1 ELSE 0 END),
-       SUM(CASE WHEN VILCLI LIKE '%(<?!2ANOMALY>)%' THEN 1 ELSE 0 END)
-FROM CLIENTS_TEST
-UNION ALL
-SELECT 'PAYSCLI',
-       SUM(CASE WHEN PAYSCLI LIKE '%(<?!1ANOMALY>)%' THEN 1 ELSE 0 END),
-       SUM(CASE WHEN PAYSCLI LIKE '%(<?!2ANOMALY>)%' THEN 1 ELSE 0 END)
-FROM CLIENTS_TEST
-UNION ALL
-SELECT 'MAILCLI',
-       SUM(CASE WHEN MAILCLI LIKE '%(<?!1ANOMALY>)%' THEN 1 ELSE 0 END),
-       SUM(CASE WHEN MAILCLI LIKE '%(<?!2ANOMALY>)%' THEN 1 ELSE 0 END)
-FROM CLIENTS_TEST
-UNION ALL
-SELECT 'TELCLI',
-       SUM(CASE WHEN TELCLI LIKE '%(<?!1ANOMALY>)%' THEN 1 ELSE 0 END),
-       SUM(CASE WHEN TELCLI LIKE '%(<?!2ANOMALY>)%' THEN 1 ELSE 0 END)
-FROM CLIENTS_TEST
-UNION ALL
-SELECT 'GENRECLI',
-       SUM(CASE WHEN GENRECLI LIKE '%(<?!1ANOMALY>)%' THEN 1 ELSE 0 END),
-       SUM(CASE WHEN GENRECLI LIKE '%(<?!2ANOMALY>)%' THEN 1 ELSE 0 END)
-FROM CLIENTS_TEST
-UNION ALL
-SELECT 'DATNAISCLI',
-       SUM(CASE WHEN DATNAISCLI LIKE '%(<?!1ANOMALY>)%' THEN 1 ELSE 0 END),
-       SUM(CASE WHEN DATNAISCLI LIKE '%(<?!2ANOMALY>)%' THEN 1 ELSE 0 END)
-FROM CLIENTS_TEST
-UNION ALL
-SELECT 'DPREMCONTACTCLI',
-       SUM(CASE WHEN DPREMCONTACTCLI LIKE '%(<?!1ANOMALY>)%' THEN 1 ELSE 0 END),
-       SUM(CASE WHEN DPREMCONTACTCLI LIKE '%(<?!2ANOMALY>)%' THEN 1 ELSE 0 END)
-FROM CLIENTS_TEST;
-
+DECLARE
+    v_sql VARCHAR2(32767);
+    v_constraint_expr META03_DD_CONSTRAINTS.CONTRAINTE%TYPE;
+    v_col_name VARCHAR2(50);
+    v_num_cols NUMBER;
+    v_update_set VARCHAR2(32767);
+    v_where_not_like VARCHAR2(32767);
+BEGIN
+    -- Parcours de chaque règle inter-colonnes
+    FOR r_inter IN (SELECT COLUMNSA, NEGCONSTRAINTSINTERCOL 
+                    FROM META04_DD_DATASTRUCTURES2 
+                    WHERE DATASOURCENAME = 'CLIENTS' 
+                      AND NEGCONSTRAINTSINTERCOL IS NOT NULL) 
+    LOOP
+        BEGIN
+            -- Récupérer la condition inter-colonnes dans META03
+            SELECT CONTRAINTE INTO v_constraint_expr 
+            FROM META03_DD_CONSTRAINTS 
+            WHERE IDCONSTRAINT = r_inter.NEGCONSTRAINTSINTERCOL;
+            
+            v_num_cols := REGEXP_COUNT(r_inter.COLUMNSA, ',') + 1;
+            v_update_set := '';
+            v_where_not_like := '';
+            
+            FOR i IN 1..v_num_cols LOOP
+                -- Extraire le segment complet (ex: COL02_CIVCLI)
+                v_col_name := REGEXP_SUBSTR(r_inter.COLUMNSA, '[^,]+', 1, i);
+                -- Ne garder que le nom réel de la colonne (ex: CIVCLI)
+                v_col_name := SUBSTR(v_col_name, INSTR(v_col_name, '_') + 1);
+                
+                -- Remplacer dynamiquement COL++1, COL++2...
+                v_constraint_expr := REPLACE(v_constraint_expr, 'COL++' || i, v_col_name);
+                
+                -- Préparer le SET de l'UPDATE (tagger toutes les colonnes impliquées)
+                IF v_update_set IS NULL THEN
+                    v_update_set := v_col_name || ' = ' || v_col_name || ' || ''(<?!2ANOMALY>)''';
+                    v_where_not_like := '(' || v_col_name || ' NOT LIKE ''%(<?!2ANOMALY>)%'' OR ' || v_col_name || ' IS NULL)';
+                ELSE
+                    v_update_set := v_update_set || ', ' || v_col_name || ' = ' || v_col_name || ' || ''(<?!2ANOMALY>)''';
+                    v_where_not_like := v_where_not_like || ' AND (' || v_col_name || ' NOT LIKE ''%(<?!2ANOMALY>)%'' OR ' || v_col_name || ' IS NULL)';
+                END IF;
+            END LOOP;
+            
+            -- Assemblage final et exécution
+            IF v_update_set IS NOT NULL THEN
+                v_sql := 'UPDATE CLIENTS_TEST ' ||
+                         'SET ' || v_update_set || ' ' ||
+                         'WHERE NOT (' || v_constraint_expr || ') ' ||
+                         'AND ' || v_where_not_like;
+                         
+                EXECUTE IMMEDIATE v_sql;
+            END IF;
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN NULL;
+        END;
+    END LOOP;
+    COMMIT;
+END;
+/
 
 SELECT * FROM CLIENTS_TEST;
