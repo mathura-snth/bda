@@ -1319,8 +1319,8 @@ ALTER TABLE CLIENTS_TEST MODIFY GENRECLI VARCHAR2(100);
 ALTER TABLE CLIENTS_TEST DROP CONSTRAINT CK_CLIENTS_TEST_CATCLI;
 
 DECLARE
-    v_sql VARCHAR2(32767);
-    v_conditions VARCHAR2(32767);
+    v_sql VARCHAR2(40000);
+    v_conditions VARCHAR2(40000);
     v_constraint_expr META03_DD_CONSTRAINTS.CONTRAINTE%TYPE;
     v_constraint_id VARCHAR2(20);
     v_num_constraints NUMBER;
@@ -1375,12 +1375,12 @@ END;
 /
 
 DECLARE
-    v_sql VARCHAR2(32767);
+    v_sql VARCHAR2(40000);
     v_constraint_expr META03_DD_CONSTRAINTS.CONTRAINTE%TYPE;
     v_col_name VARCHAR2(50);
     v_num_cols NUMBER;
-    v_update_set VARCHAR2(32767);
-    v_where_not_like VARCHAR2(32767);
+    v_update_set VARCHAR2(40000);
+    v_where_not_like VARCHAR2(40000);
 BEGIN
     -- Parcours de chaque règle inter-colonnes
     FOR r_inter IN (SELECT COLUMNSA, NEGCONSTRAINTSINTERCOL 
@@ -1434,4 +1434,57 @@ BEGIN
 END;
 /
 
-SELECT * FROM CLIENTS_TEST;
+-- =====================================================================================
+-- 1. REQUÊTE D'EXPORT EXCEL : QUALI-SCORE PAR LIGNE (TUPLE)
+-- =====================================================================================
+WITH CALCUL_ANOMALIES AS (
+    SELECT 
+        c.*,
+        -- Comptage de toutes les occurrences d'anomalies (Type 1 et 2) sur la ligne
+        REGEXP_COUNT(
+            CODCLI || CIVCLI || NOMCLI || PRENCLI || CATCLI || 
+            ADNCLI || ADRCLI || CPCLI || VILCLI || PAYSCLI || 
+            MAILCLI || TELCLI || GENRECLI || DATNAISCLI || 
+            DPREMCONTACTCLI || OBSCLI || REMCLI, 
+            '\(\<\?\![12]ANOMALY\>\)'
+        ) AS NB_ANOMALIES
+    FROM CLIENTS_TEST c
+)
+SELECT 
+    ca.*,
+    -- Taux de pureté de la ligne (La table contient 17 colonnes évaluées)
+    ROUND(((17 - NB_ANOMALIES) / 17) * 100, 2) AS SCORE_POURCENT,
+    -- Attribution de la note Quali-Score
+    CASE 
+        WHEN NB_ANOMALIES = 0 THEN 'A'
+        WHEN NB_ANOMALIES = 1 THEN 'B'
+        WHEN NB_ANOMALIES = 2 THEN 'C'
+        WHEN NB_ANOMALIES BETWEEN 3 AND 4 THEN 'D'
+        ELSE 'E'
+    END AS QUALI_SCORE
+FROM CALCUL_ANOMALIES ca;
+
+-- =====================================================================================
+-- 2. SCORE GLOBAL DE LA TABLE (POUR REPRODUIRE LE DIAPORAMA)
+-- =====================================================================================
+SELECT 
+    COUNT(*) * 17 AS NOMBRE_TOTAL_CASES,
+    
+    SUM(REGEXP_COUNT(
+        CODCLI || CIVCLI || NOMCLI || PRENCLI || CATCLI || 
+        ADNCLI || ADRCLI || CPCLI || VILCLI || PAYSCLI || 
+        MAILCLI || TELCLI || GENRECLI || DATNAISCLI || 
+        DPREMCONTACTCLI || OBSCLI || REMCLI, 
+        '\(\<\?\![12]ANOMALY\>\)'
+    )) AS NOMBRE_ANOMALIES_DETECTEES,
+    
+    ROUND(
+        ((COUNT(*) * 17) - SUM(REGEXP_COUNT(
+            CODCLI || CIVCLI || NOMCLI || PRENCLI || CATCLI || 
+            ADNCLI || ADRCLI || CPCLI || VILCLI || PAYSCLI || 
+            MAILCLI || TELCLI || GENRECLI || DATNAISCLI || 
+            DPREMCONTACTCLI || OBSCLI || REMCLI, 
+            '\(\<\?\![12]ANOMALY\>\)'
+        ))) / (COUNT(*) * 17) * 100
+    , 2) AS SCORE_GLOBAL_POURCENT
+FROM CLIENTS_TEST;
