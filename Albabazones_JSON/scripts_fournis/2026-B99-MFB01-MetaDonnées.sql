@@ -285,7 +285,7 @@ SELECT * FROM META02_DD_MESURES;
 -- ==== MFB =======================================================================================================================
 -- Création d'un dictionnaire des données pour gérer les contraintes à définir sur les données    ---- Début
 -- ==== MFB =======================================================================================================================
-DROP TABLE META03_DD_CONSTRAINTS;
+DROP TABLE META03_DD_CONSTRAINTS CASCADE CONSTRAINTS;
 CREATE TABLE META03_DD_CONSTRAINTS
 (
 IDCONSTRAINT                                VARCHAR2(20),
@@ -407,10 +407,10 @@ INSERT INTO META03_DD_CONSTRAINTS VALUES ('NSTNI01', 'TELEPHONE_TN_INTERNATIONAL
 
 -- Negative Constraints / Contraintes négatives INTER-COL++ONNES >>>> String Varchar, Char
 INSERT INTO META03_DD_CONSTRAINTS VALUES ('NS9200', 'INTER_COLUMNS', 'Conjonction/disjonction (AND/OR) de plusieurs conditions sur deux COLonnes A et B',                         
-'( (COL++1 = ''Madame'' AND COL2 IN (''2'', ''4'', ''6'')) OR (COL++1 = ''Monsieur'' AND COL++2 IN (''1'', ''3'', ''5'')) )', '');
+'( (COL++1 = ''Madame'' AND COL++2 IN (''2'', ''4'', ''6'')) OR (COL++1 = ''Monsieur'' AND COL++2 IN (''1'', ''3'', ''5'')) )', '');
 
 INSERT INTO META03_DD_CONSTRAINTS VALUES ('NS9201', 'INTER_COL++UMNS', 'Conjonction/disjonction (AND/OR) de plusieurs conditions sur deux COL++onnes A et B',                         
-'( COL++1 < COL++2 )', '');
+'( TO_DATE(COL++1, ''DD-MM-YYYY'') < TO_DATE(COL++2, ''DD-MM-YYYY'') )', '');
 
 INSERT INTO META03_DD_CONSTRAINTS VALUES ('NS9300', 'INTER_COL++UMNS', 'Conjonction/disjonction (AND/OR) de plusieurs conditions sur plusieurs COL++onnes A et B',                         
 '( NOT (COL++1 = ''Mademoiselle'' AND COL++2 = ''AFRICAINE'' AND COL++3 = ''PARIS'') )', '');
@@ -1129,7 +1129,7 @@ COMMIT;
 -- Table nettoyée (sauf dates)
 -- ==== MFB =======================================================================================================================
 
-DROP TABLE CLIENTS_TEST CASCADE CONSTRAINTS;
+--DROP TABLE CLIENTS_TEST CASCADE CONSTRAINTS;
 CREATE TABLE CLIENTS_TEST
 (   -- Descriptions des colonnes
 	CODCLI		VARCHAR2(20), 
@@ -1144,11 +1144,13 @@ CREATE TABLE CLIENTS_TEST
 	PAYSCLI		VARCHAR2(50),
 	MAILCLI		VARCHAR2(50),
 	TELCLI		VARCHAR2(20),
-	DATNAISCLI       DATE,
-	DPREMCONTACTCLI  DATE,
+	DATNAISCLI       VARCHAR2(50),
+	DPREMCONTACTCLI  VARCHAR2(50),
 	OBSCLI		VARCHAR2(200),
 	REMCLI		VARCHAR2(200),
 	GENRECLI	VARCHAR2(2),
+    GSCLI       VARCHAR2(50),      -- Ajout de la colonne manquante
+    KEYWORDSCLI VARCHAR2(300),     -- Ajout de la colonne manquante
 	-- Descriptions des contraintes
 	CONSTRAINT PK_CLIENTS_TEST			    PRIMARY KEY(CODCLI),
 	--CONSTRAINT CK_CLIENTS_CIVCLI		CHECK(UPPER(CIVCLI)   IN ('MADEMOISELLE', 'MADAME', 'MONSIEUR')),
@@ -1318,116 +1320,117 @@ ALTER TABLE CLIENTS_TEST MODIFY GENRECLI VARCHAR2(100);
 
 ALTER TABLE CLIENTS_TEST DROP CONSTRAINT CK_CLIENTS_TEST_CATCLI;
 
+-- =========================================================
+-- 1. BLOC AUTOMATISÉ INTRA-COLONNE (Version blindée)
+-- =========================================================
 DECLARE
-    v_sql VARCHAR2(40000);
-    v_conditions VARCHAR2(40000);
+    v_sql VARCHAR2(32767);
+    v_conditions VARCHAR2(32767);
     v_constraint_expr META03_DD_CONSTRAINTS.CONTRAINTE%TYPE;
     v_constraint_id VARCHAR2(20);
     v_num_constraints NUMBER;
 BEGIN
-    -- Parcours de chaque colonne définie dans META04 (Intra-colonne) pour CLIENTS
     FOR r_col IN (SELECT COLUMNNAME, NEGCONSTRAINTSINTRACOL 
                   FROM META04_DD_DATASTRUCTURES1 
                   WHERE DATASOURCENAME = 'CLIENTS' 
                     AND NEGCONSTRAINTSINTRACOL IS NOT NULL) 
     LOOP
         v_conditions := '';
-        -- Compter le nombre de contraintes séparées par le tiret '-'
         v_num_constraints := REGEXP_COUNT(r_col.NEGCONSTRAINTSINTRACOL, '-') + 1;
         
         FOR i IN 1..v_num_constraints LOOP
-            -- Extraire l'ID de la contrainte (ex: NS2510)
-            v_constraint_id := REGEXP_SUBSTR(r_col.NEGCONSTRAINTSINTRACOL, '[^-]+', 1, i);
+            -- Le TRIM est crucial ici pour éviter les espaces fantômes
+            v_constraint_id := TRIM(REGEXP_SUBSTR(r_col.NEGCONSTRAINTSINTRACOL, '[^-]+', 1, i));
+            v_constraint_expr := NULL; 
             
             BEGIN
-                -- Récupérer la Regex / condition SQL dans META03
                 SELECT CONTRAINTE INTO v_constraint_expr 
                 FROM META03_DD_CONSTRAINTS 
                 WHERE IDCONSTRAINT = v_constraint_id;
                 
-                -- Remplacer le mot-clé générique 'COL++' par le nom de la colonne
-                v_constraint_expr := REPLACE(v_constraint_expr, 'COL++', r_col.COLUMNNAME);
-                
-                -- Concaténer les conditions avec un ' AND '
-                IF v_conditions IS NULL THEN
-                    v_conditions := v_constraint_expr;
-                ELSE
-                    v_conditions := v_conditions || ' AND ' || v_constraint_expr;
+                IF v_constraint_expr IS NOT NULL THEN
+                    v_constraint_expr := REPLACE(v_constraint_expr, 'COL++', r_col.COLUMNNAME);
+                    IF v_conditions IS NULL OR v_conditions = '' THEN
+                        v_conditions := v_constraint_expr;
+                    ELSE
+                        v_conditions := v_conditions || ' AND ' || v_constraint_expr;
+                    END IF;
                 END IF;
             EXCEPTION
                 WHEN NO_DATA_FOUND THEN NULL;
             END;
         END LOOP;
         
-        -- Si des conditions existent, on construit et exécute dynamiquement l'UPDATE
-        IF v_conditions IS NOT NULL THEN
+        IF TRIM(v_conditions) IS NOT NULL THEN
             v_sql := 'UPDATE CLIENTS_TEST ' ||
                      'SET ' || r_col.COLUMNNAME || ' = ' || r_col.COLUMNNAME || ' || ''(<?!1ANOMALY>)'' ' ||
                      'WHERE NOT (' || v_conditions || ') ' ||
                      'AND ' || r_col.COLUMNNAME || ' NOT LIKE ''%(<?!1ANOMALY>)%'' ' ||
                      'AND ' || r_col.COLUMNNAME || ' IS NOT NULL';
-            
-            EXECUTE IMMEDIATE v_sql;
+            BEGIN
+                EXECUTE IMMEDIATE v_sql;
+            EXCEPTION
+                WHEN OTHERS THEN
+                    DBMS_OUTPUT.PUT_LINE('⚠️ ERREUR IGNOREE (INTRA-COLONNE) sur : ' || r_col.COLUMNNAME || ' | Erreur : ' || SQLERRM);
+            END;
         END IF;
     END LOOP;
     COMMIT;
 END;
 /
+/
 
 DECLARE
-    v_sql VARCHAR2(40000);
+    v_sql             VARCHAR2(30000);
     v_constraint_expr META03_DD_CONSTRAINTS.CONTRAINTE%TYPE;
-    v_col_name VARCHAR2(50);
-    v_num_cols NUMBER;
-    v_update_set VARCHAR2(40000);
-    v_where_not_like VARCHAR2(40000);
+    v_col_name        VARCHAR2(50);
+    v_col_clean       VARCHAR2(500);
+    v_num_cols        NUMBER;
+    v_update_set      VARCHAR2(4000);
 BEGIN
-    -- Parcours de chaque règle inter-colonnes
-    FOR r_inter IN (SELECT COLUMNSA, NEGCONSTRAINTSINTERCOL 
-                    FROM META04_DD_DATASTRUCTURES2 
-                    WHERE DATASOURCENAME = 'CLIENTS' 
-                      AND NEGCONSTRAINTSINTERCOL IS NOT NULL) 
+    -- Parcours de chaque règle inter-colonnes (META04_DD_DATASTRUCTURES2)
+    FOR r_inter IN (SELECT COLUMNSA, NEGCONSTRAINTSINTERCOL
+                    FROM META04_DD_DATASTRUCTURES2
+                    WHERE DATASOURCENAME = 'CLIENTS'
+                      AND NEGCONSTRAINTSINTERCOL IS NOT NULL)
     LOOP
         BEGIN
             -- Récupérer la condition inter-colonnes dans META03
-            SELECT CONTRAINTE INTO v_constraint_expr 
-            FROM META03_DD_CONSTRAINTS 
+            SELECT CONTRAINTE INTO v_constraint_expr
+            FROM META03_DD_CONSTRAINTS
             WHERE IDCONSTRAINT = r_inter.NEGCONSTRAINTSINTERCOL;
-            
-            v_num_cols := REGEXP_COUNT(r_inter.COLUMNSA, ',') + 1;
+
+            v_num_cols   := REGEXP_COUNT(r_inter.COLUMNSA, ',') + 1;
             v_update_set := '';
-            v_where_not_like := '';
-            
+
             FOR i IN 1..v_num_cols LOOP
-                -- Extraire le segment complet (ex: COL02_CIVCLI)
+                -- Extraire le nom réel de la colonne (COL02_CIVCLI -> CIVCLI)
                 v_col_name := REGEXP_SUBSTR(r_inter.COLUMNSA, '[^,]+', 1, i);
-                -- Ne garder que le nom réel de la colonne (ex: CIVCLI)
                 v_col_name := SUBSTR(v_col_name, INSTR(v_col_name, '_') + 1);
-                
-                -- Remplacer dynamiquement COL++1, COL++2...
-                v_constraint_expr := REPLACE(v_constraint_expr, 'COL++' || i, v_col_name);
-                
-                -- Préparer le SET de l'UPDATE (tagger toutes les colonnes impliquées)
-                IF v_update_set IS NULL THEN
-                    v_update_set := v_col_name || ' = ' || v_col_name || ' || ''(<?!2ANOMALY>)''';
-                    v_where_not_like := '(' || v_col_name || ' NOT LIKE ''%(<?!2ANOMALY>)%'' OR ' || v_col_name || ' IS NULL)';
-                ELSE
-                    v_update_set := v_update_set || ', ' || v_col_name || ' = ' || v_col_name || ' || ''(<?!2ANOMALY>)''';
-                    v_where_not_like := v_where_not_like || ' AND (' || v_col_name || ' NOT LIKE ''%(<?!2ANOMALY>)%'' OR ' || v_col_name || ' IS NULL)';
+
+                -- CHANGEMENT 1 : la condition est évaluée sur la valeur SANS les tags déjà posés
+                -- (sinon une règle qui a taguée CIVCLI empêche les autres règles de se déclencher)
+                v_col_clean := 'REGEXP_REPLACE(' || v_col_name || ', ''\(<\?![12]ANOMALY>\)'', '''')';
+                v_constraint_expr := REPLACE(v_constraint_expr, 'COL++' || i, v_col_clean);
+
+                -- CHANGEMENT 2 : on tague la cellule une seule fois (CASE) au lieu de filtrer dans le WHERE
+                IF v_update_set IS NOT NULL THEN
+                    v_update_set := v_update_set || ', ';
                 END IF;
+                v_update_set := v_update_set || v_col_name || ' = CASE WHEN ' || v_col_name ||
+                                ' LIKE ''%(<?!2ANOMALY>)%'' THEN ' || v_col_name ||
+                                ' ELSE ' || v_col_name || ' || ''(<?!2ANOMALY>)'' END';
             END LOOP;
-            
-            -- Assemblage final et exécution
-            IF v_update_set IS NOT NULL THEN
-                v_sql := 'UPDATE CLIENTS_TEST ' ||
-                         'SET ' || v_update_set || ' ' ||
-                         'WHERE NOT (' || v_constraint_expr || ') ' ||
-                         'AND ' || v_where_not_like;
-                         
-                EXECUTE IMMEDIATE v_sql;
-            END IF;
+
+            v_sql := 'UPDATE CLIENTS_TEST SET ' || v_update_set ||
+                     ' WHERE NOT (' || v_constraint_expr || ')';
+
+            EXECUTE IMMEDIATE v_sql;
         EXCEPTION
             WHEN NO_DATA_FOUND THEN NULL;
+            -- CHANGEMENT 3 : une règle en erreur est AFFICHÉE (et n'empêche plus les autres)
+            WHEN OTHERS THEN
+                DBMS_OUTPUT.PUT_LINE('ERREUR règle ' || r_inter.NEGCONSTRAINTSINTERCOL || ' : ' || SQLERRM);
         END;
     END LOOP;
     COMMIT;
@@ -1488,3 +1491,5 @@ SELECT
         ))) / (COUNT(*) * 17) * 100
     , 2) AS SCORE_GLOBAL_POURCENT
 FROM CLIENTS_TEST;
+
+SELECT * FROM CLIENTS_TEST;
