@@ -133,6 +133,51 @@ SELECT * FROM matchval;
 -- Metaphone -->>> ????????????? A Compléter
 -- =============================================================================== 
 -- ===============================================================================
+-- FONCTION Q-GRAM :
+CREATE OR REPLACE FUNCTION q_gram_similarity (
+    p_str1 IN VARCHAR2,
+    p_str2 IN VARCHAR2,
+    p_q    IN NUMBER DEFAULT 2
+) RETURN NUMBER IS
+    v_len1      NUMBER;
+    v_len2      NUMBER;
+    v_intersect NUMBER := 0;
+    v_qgram     VARCHAR2(4000);
+    v_str2_temp VARCHAR2(4000);
+BEGIN
+    IF p_str1 IS NULL OR p_str2 IS NULL THEN
+        RETURN 0;
+    END IF;
+
+    v_len1 := LENGTH(p_str1);
+    v_len2 := LENGTH(p_str2);
+
+    IF v_len1 < p_q OR v_len2 < p_q THEN
+        IF p_str1 = p_str2 THEN RETURN 100; ELSE RETURN 0; END IF;
+    END IF;
+
+    v_str2_temp := p_str2;
+
+    FOR i IN 1 .. (v_len1 - p_q + 1) LOOP
+        v_qgram := SUBSTR(p_str1, i, p_q);
+        
+        IF INSTR(v_str2_temp, v_qgram) > 0 THEN
+            v_intersect := v_intersect + 1;
+            v_str2_temp := SUBSTR(v_str2_temp, 1, INSTR(v_str2_temp, v_qgram) - 1) || '#' || 
+                           SUBSTR(v_str2_temp, INSTR(v_str2_temp, v_qgram) + 1);
+        END IF;
+    END LOOP;
+
+    RETURN ROUND((2 * v_intersect) / ((v_len1 - p_q + 1) + (v_len2 - p_q + 1)) * 100);
+END;
+/
+
+
+
+
+-- =============================================================================== 
+-- ===============================================================================
+
 SELECT Idval,
        categorieval,
        valeur1,
@@ -142,12 +187,14 @@ SELECT Idval,
 	   UTL_MATCH.edit_distance_similarity(UPPER(valeur1), UPPER(valeur2)) EDS,
 	   UTL_MATCH.jaro_winkler(UPPER(valeur1), UPPER(valeur2)) JW,
 	   UTL_MATCH.jaro_winkler_similarity(UPPER(valeur1), UPPER(valeur2)) JWS,
-	   'Q-GRAM ???',
+     q_gram_similarity(UPPER(valeur1), UPPER(valeur2)) Q_GRAM,
+	   -- 'Q-GRAM ???',
 	   -- Se prononce comme
 	   SOUNDEX(UPPER(valeur1)) SON1, SOUNDEX(UPPER(valeur2)) SON2,
 	   UTL_MATCH.jaro_winkler_similarity(SOUNDEX(UPPER(valeur1)), SOUNDEX(UPPER(valeur2))) S1S2,
 	   'METAPHONE ???'
 FROM   matchval
+-- on peut ajouter un seuil pour n'afficher que les tuples les plus proches
 ORDER BY Idval;
 /*
 IDVAL      CATEGORIEVAL         VALEUR1                   VALEUR2                           ED        EDS         JW        JWS 'Q-GRAM??? SON1 SON2 'METAPHONE???
@@ -423,11 +470,11 @@ TRAIFORT Nadia 17-09-2000 EPINAY-SUR-SEINE FRANCE
  8 lignes sélectionnées 
 */
 
-CREATE OR REPLACE PROCEDURE ELIMINEDOUBSIMIL (NOMTAB VARCHAR2) IS
-BEGIN 
+-- CREATE OR REPLACE PROCEDURE ELIMINEDOUBSIMIL (NOMTAB VARCHAR2) IS
+-- BEGIN 
 -- TRAVAIL A FAIRE : Transformer les étapes pour éliminer les doubles/similaires dans une procédure
-END;
-/
+-- END;
+-- /
 
 -- =============================================================================== 
 -- =============================================================================== 
@@ -510,11 +557,11 @@ A theory of redo recovery David Lomet, Mark Tuttle International Conference on M
 A Theory of Redo-Recovery Mark R. Tuttle, David B. Lomet SIGMOD Conference 2003                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
 */
 
-CREATE OR REPLACE PROCEDURE ELIMINEDOUBSIMIL (NOMTAB VARCHAR2) IS
-BEGIN 
+-- CREATE OR REPLACE PROCEDURE ELIMINEDOUBSIMIL (NOMTAB VARCHAR2) IS
+-- BEGIN 
 -- TRAVAIL A FAIRE : Transformer les étapes pour éliminer les doubles/similaires dans une procédure
-END;
-/
+-- END;
+-- /
 
 
 -- =============================================================================== 
@@ -681,11 +728,11 @@ C124 Monsieur DE    PAR       DE Girard 1 27 AVENUE D_ITALIE 75013      PARIS   
  9 lignes sélectionnées 
 */
 
-CREATE OR REPLACE PROCEDURE ELIMINEDOUBSIMIL (NOMTAB VARCHAR2) IS
-BEGIN 
+-- CREATE OR REPLACE PROCEDURE ELIMINEDOUBSIMIL (NOMTAB VARCHAR2) IS
+-- BEGIN 
 -- TRAVAIL A FAIRE : Transformer les étapes pour éliminer les doubles/similaires dans une procédure
-END;
-/
+-- END;
+-- /
 
 -- =============================================================================== 
 -- =============================================================================== 
@@ -794,11 +841,11 @@ K
  6 lignes sélectionnées 
 */
 
-CREATE OR REPLACE PROCEDURE ELIMINEDOUBSIMIL (NOMTAB VARCHAR2) IS
-BEGIN 
+-- CREATE OR REPLACE PROCEDURE ELIMINEDOUBSIMIL (NOMTAB VARCHAR2) IS
+-- BEGIN 
 -- TRAVAIL A FAIRE : Transformer les étapes pour éliminer les doubles/similaires dans une procédure
-END;
-/
+-- END;
+-- /
 
 -- ===============================================================================
 -- ===============================================================================
