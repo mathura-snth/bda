@@ -196,6 +196,49 @@ SELECT Idval,
 FROM   matchval
 -- on peut ajouter un seuil pour n'afficher que les tuples les plus proches
 ORDER BY Idval;
+
+-- Test prénom
+
+SELECT Idval, valeur1, valeur2,
+       UTL_MATCH.edit_distance_similarity(UPPER(valeur1), UPPER(valeur2)) AS Edit_Dist_Sim,
+       UTL_MATCH.jaro_winkler_similarity(UPPER(valeur1), UPPER(valeur2)) AS Jaro_Winkler_Sim,
+       q_gram_similarity(UPPER(valeur1), UPPER(valeur2)) AS Q_Gram_Sim,
+       UTL_MATCH.jaro_winkler_similarity(SOUNDEX(UPPER(valeur1)), SOUNDEX(UPPER(valeur2))) AS Phonetique_Sim
+FROM matchval
+WHERE categorieval = 'FIRSTNAME'
+ORDER BY Idval;
+
+-- Test nom
+SELECT Idval, valeur1, valeur2,
+       UTL_MATCH.edit_distance_similarity(UPPER(valeur1), UPPER(valeur2)) AS Edit_Dist_Sim,
+       UTL_MATCH.jaro_winkler_similarity(UPPER(valeur1), UPPER(valeur2)) AS Jaro_Winkler_Sim,
+       q_gram_similarity(UPPER(valeur1), UPPER(valeur2)) AS Q_Gram_Sim,
+       UTL_MATCH.jaro_winkler_similarity(SOUNDEX(UPPER(valeur1)), SOUNDEX(UPPER(valeur2))) AS Phonetique_Sim
+FROM matchval
+WHERE categorieval = 'FIRSTLASTNAME'
+ORDER BY Idval;
+
+-- tests sur les villes
+
+SELECT Idval, valeur1, valeur2,
+       UTL_MATCH.edit_distance_similarity(UPPER(valeur1), UPPER(valeur2)) AS Edit_Dist_Sim,
+       UTL_MATCH.jaro_winkler_similarity(UPPER(valeur1), UPPER(valeur2)) AS Jaro_Winkler_Sim,
+       q_gram_similarity(UPPER(valeur1), UPPER(valeur2)) AS Q_Gram_Sim,
+       UTL_MATCH.jaro_winkler_similarity(SOUNDEX(UPPER(valeur1)), SOUNDEX(UPPER(valeur2))) AS Phonetique_Sim
+FROM matchval
+WHERE categorieval = 'CITY'
+ORDER BY Idval;
+
+-- tests sur les emails
+SELECT Idval, valeur1, valeur2,
+       UTL_MATCH.edit_distance_similarity(UPPER(valeur1), UPPER(valeur2)) AS Edit_Dist_Sim,
+       UTL_MATCH.jaro_winkler_similarity(UPPER(valeur1), UPPER(valeur2)) AS Jaro_Winkler_Sim,
+       q_gram_similarity(UPPER(valeur1), UPPER(valeur2)) AS Q_Gram_Sim,
+       UTL_MATCH.jaro_winkler_similarity(SOUNDEX(UPPER(valeur1)), SOUNDEX(UPPER(valeur2))) AS Phonetique_Sim
+FROM matchval
+WHERE categorieval = 'EMAIL'
+ORDER BY Idval;
+
 /*
 IDVAL      CATEGORIEVAL         VALEUR1                   VALEUR2                           ED        EDS         JW        JWS 'Q-GRAM??? SON1 SON2 'METAPHONE???
 ---------- -------------------- ------------------------- ------------------------- ---------- ---------- ---------- ---------- ---------- ---- ---- -------------
