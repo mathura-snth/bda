@@ -188,7 +188,6 @@ SELECT Idval,
 	   UTL_MATCH.jaro_winkler(UPPER(valeur1), UPPER(valeur2)) JW,
 	   UTL_MATCH.jaro_winkler_similarity(UPPER(valeur1), UPPER(valeur2)) JWS,
      q_gram_similarity(UPPER(valeur1), UPPER(valeur2)) Q_GRAM,
-	   -- 'Q-GRAM ???',
 	   -- Se prononce comme
 	   SOUNDEX(UPPER(valeur1)) SON1, SOUNDEX(UPPER(valeur2)) SON2,
 	   UTL_MATCH.jaro_winkler_similarity(SOUNDEX(UPPER(valeur1)), SOUNDEX(UPPER(valeur2))) S1S2,
@@ -238,6 +237,27 @@ SELECT Idval, valeur1, valeur2,
 FROM matchval
 WHERE categorieval = 'EMAIL'
 ORDER BY Idval;
+
+SELECT categorieval, valeur1, valeur2,
+       UTL_MATCH.edit_distance_similarity(UPPER(valeur1), UPPER(valeur2)) AS Score_Edit_Distance
+FROM matchval
+WHERE categorieval = 'EMAIL'
+  AND UTL_MATCH.edit_distance_similarity(UPPER(valeur1), UPPER(valeur2)) > 95
+ORDER BY Score_Edit_Distance DESC;
+
+SELECT categorieval, valeur1, valeur2,
+       UTL_MATCH.jaro_winkler_similarity(UPPER(valeur1), UPPER(valeur2)) AS Score_Jaro_Winkler
+FROM matchval
+WHERE categorieval IN ('FIRSTNAME', 'CITY')
+  AND UTL_MATCH.jaro_winkler_similarity(UPPER(valeur1), UPPER(valeur2)) > 85
+ORDER BY categorieval, Score_Jaro_Winkler DESC;
+
+SELECT categorieval, valeur1, valeur2,
+       q_gram_similarity(UPPER(valeur1), UPPER(valeur2)) AS Score_Q_Gram
+FROM matchval
+WHERE categorieval = 'FIRSTLASTNAME'
+  AND q_gram_similarity(UPPER(valeur1), UPPER(valeur2)) > 75
+ORDER BY Score_Q_Gram DESC;
 
 /*
 IDVAL      CATEGORIEVAL         VALEUR1                   VALEUR2                           ED        EDS         JW        JWS 'Q-GRAM??? SON1 SON2 'METAPHONE???
