@@ -180,7 +180,7 @@ ALTER SESSION SET NLS_LANGUAGE=ENGLISH;
 -- META01_DD_PARAMETRAGES
 -- Les différentes codifications des valeurs manquantes (MISSING VALUES) :
 -- Le séparateur ; ...
-DROP   TABLE META01_DD_PARAMETRAGES ;
+DROP TABLE META01_DD_PARAMETRAGES CASCADE CONSTRAINTS;
 CREATE TABLE META01_DD_PARAMETRAGES ( ID_PARAMETRE VARCHAR2(10), COMMENTAIRE_PARAM VARCHAR2(500), VALEUR_PARAM VARCHAR2(500) );
 INSERT INTO META01_DD_PARAMETRAGES VALUES ( 'Param1', 'Le Séparateur CSV', ';' ) ;
 INSERT INTO META01_DD_PARAMETRAGES VALUES ( 'Param2', 'Les différentes codifications des valeurs manquantes : MISSING VALUES', ' IN (''MISSINGVALUE'',''NULL'', ''-'', ''='', ''!'', ''?'', '''')'  );
@@ -214,6 +214,7 @@ SELECT * FROM META01_DD_PARAMETRAGES;
 -- ==== MFB =======================================================================================================================
 -- Les Mesures réalisées pour une table et pour chacune des colonnes
 -- META02_DD_MESURES
+
 DROP   TABLE META02_DD_MESURES ;
 CREATE TABLE META02_DD_MESURES ( MESUREIDENTIFIER VARCHAR2(10), MESUREDESCRIPTION VARCHAR2(500) );
 INSERT INTO META02_DD_MESURES VALUES ('M000', 'Number of rows in the data source DS');
@@ -278,6 +279,8 @@ INSERT INTO META02_DD_MESURES VALUES ('M166', 'Minimum value of dates (oldest) i
 INSERT INTO META02_DD_MESURES VALUES ('M167', 'Maximum value of dates (most recent) in a column');
 COMMIT;
 SELECT * FROM META02_DD_MESURES;
+
+
 
 
 -- ==== MFB =======================================================================================================================
@@ -407,10 +410,10 @@ INSERT INTO META03_DD_CONSTRAINTS VALUES ('NSTNI01', 'TELEPHONE_TN_INTERNATIONAL
 
 -- Negative Constraints / Contraintes négatives INTER-COL++ONNES >>>> String Varchar, Char
 INSERT INTO META03_DD_CONSTRAINTS VALUES ('NS9200', 'INTER_COLUMNS', 'Conjonction/disjonction (AND/OR) de plusieurs conditions sur deux COLonnes A et B',                         
-'( (COL++1 = ''Madame'' AND COL++2 IN (''2'', ''4'', ''6'')) OR (COL++1 = ''Monsieur'' AND COL++2 IN (''1'', ''3'', ''5'')) )', '');
+'( (COL++1 = ''Madame'' AND COL2 IN (''2'', ''4'', ''6'')) OR (COL++1 = ''Monsieur'' AND COL++2 IN (''1'', ''3'', ''5'')) )', '');
 
 INSERT INTO META03_DD_CONSTRAINTS VALUES ('NS9201', 'INTER_COL++UMNS', 'Conjonction/disjonction (AND/OR) de plusieurs conditions sur deux COL++onnes A et B',                         
-'( TO_DATE(COL++1, ''DD-MM-YYYY'') < TO_DATE(COL++2, ''DD-MM-YYYY'') )', '');
+'( COL++1 < COL++2 )', '');
 
 INSERT INTO META03_DD_CONSTRAINTS VALUES ('NS9300', 'INTER_COL++UMNS', 'Conjonction/disjonction (AND/OR) de plusieurs conditions sur plusieurs COL++onnes A et B',                         
 '( NOT (COL++1 = ''Mademoiselle'' AND COL++2 = ''AFRICAINE'' AND COL++3 = ''PARIS'') )', '');
@@ -471,6 +474,59 @@ INSERT INTO META04_DD_DATASTRUCTURES1 VALUES ('DETAILCOM', 'COL05', 'PUART', 'NU
 COMMIT;
 SELECT * FROM META04_DD_DATASTRUCTURES1;
 
+CREATE TABLE DATASTRUCTURES1(DATASOURCENAME VARCHAR2(50), COLUMNIDENTIFIER VARCHAR2(50), 
+COLUMNNAME VARCHAR2(50), DATATYPE VARCHAR2(50), DATALENGTH NUMBER, 
+DOUBLEALLOWED VARCHAR2(50), POSCONSTRAINTSINTRACOL VARCHAR2(50));
+
+INSERT INTO DATASTRUCTURES1 (
+    DATASOURCENAME, COLUMNIDENTIFIER , COLUMNNAME, DATATYPE, DATALENGTH , DOUBLEALLOWED, POSCONSTRAINTSINTRACOL)
+SELECT 
+    DATASOURCENAME, 
+    COLUMNIDENTIFIER,
+    COLUMNNAME, 
+    DATATYPE, 
+    DATALENGTH ,
+    DOUBLEALLOWED, 
+    POSCONSTRAINTSINTRACOL
+FROM META04_DD_DATASTRUCTURES1;
+
+COMMIT;
+
+SELECT * FROM DATASTRUCTURES1;
+
+DROP TABLE TEST;
+CREATE TABLE TEST ( 
+
+    COLNAME VARCHAR2(2000),
+    IDCONTRAINTE VARCHAR2(2000),
+    CONSTRAINT PK_TEST_CLE PRIMARY KEY (COLNAME,IDCONTRAINTE)
+);
+
+
+DECLARE
+    v_sql VARCHAR2(30000);
+    v_constraint_id VARCHAR2(20);
+    v_num_constraints NUMBER;
+BEGIN
+    FOR r_col IN (SELECT DATASOURCENAME, COLUMNNAME, NEGCONSTRAINTSINTRACOL FROM META04_DD_DATASTRUCTURES1 WHERE DATASOURCENAME = 'CLIENTS') 
+    LOOP
+        v_num_constraints := REGEXP_COUNT(r_col.NEGCONSTRAINTSINTRACOL, '-') + 1;
+        
+        FOR i IN 1..v_num_constraints LOOP
+            v_constraint_id := REGEXP_SUBSTR(r_col.NEGCONSTRAINTSINTRACOL, '[^-]+', 1, i);
+            
+            v_sql := 'INSERT INTO TEST (COLNAME,IDCONTRAINTE) ' ||
+                     'VALUES (''' || r_col.COLUMNNAME || ''',''' || v_constraint_id || ''')';
+            
+            EXECUTE IMMEDIATE v_sql;
+        END LOOP;
+
+    END LOOP;
+    COMMIT;
+END;
+/ 
+
+SELECT * FROM TEST;
 
 DROP TABLE META04_DD_DATASTRUCTURES2; 
 CREATE TABLE META04_DD_DATASTRUCTURES2(DATASOURCENAME VARCHAR2(50), COLUMNSA VARCHAR2(200), NEGCONSTRAINTSINTERCOL VARCHAR2(200));
@@ -797,6 +853,8 @@ COMMIT;
 
 SELECT COUNT(*) AS NbrPays FROM META0002_DDVS_PAYSCONTINENT;
 SELECT CONTINENT, COUNT(*) AS NbrPays FROM META0002_DDVS_PAYSCONTINENT GROUP BY CONTINENT ORDER BY 1;
+
+
 
 
 
@@ -1129,28 +1187,26 @@ COMMIT;
 -- Table nettoyée (sauf dates)
 -- ==== MFB =======================================================================================================================
 
---DROP TABLE CLIENTS_TEST CASCADE CONSTRAINTS;
+DROP TABLE CLIENTS_TEST CASCADE CONSTRAINTS;
 CREATE TABLE CLIENTS_TEST
 (   -- Descriptions des colonnes
-	CODCLI		VARCHAR2(20), 
-	CIVCLI		VARCHAR2(20),
-	NOMCLI		VARCHAR2(50),
-	PRENCLI		VARCHAR2(50),
-	CATCLI		VARCHAR2(200),
-	ADNCLI		VARCHAR2(10),
-	ADRCLI		VARCHAR2(50),
-	CPCLI		VARCHAR2(10),
-	VILCLI		VARCHAR2(50),
-	PAYSCLI		VARCHAR2(50),
-	MAILCLI		VARCHAR2(50),
-	TELCLI		VARCHAR2(20),
-	DATNAISCLI       VARCHAR2(50),
-	DPREMCONTACTCLI  VARCHAR2(50),
-	OBSCLI		VARCHAR2(200),
-	REMCLI		VARCHAR2(200),
-	GENRECLI	VARCHAR2(2),
-    GSCLI       VARCHAR2(50),      -- Ajout de la colonne manquante
-    KEYWORDSCLI VARCHAR2(300),     -- Ajout de la colonne manquante
+	CODCLI		VARCHAR2(2000), 
+	CIVCLI		VARCHAR2(2000),
+	NOMCLI		VARCHAR2(2000),
+	PRENCLI		VARCHAR2(2000),
+	CATCLI		NUMBER(20),
+	ADNCLI		VARCHAR2(2000),
+	ADRCLI		VARCHAR2(2000),
+	CPCLI		VARCHAR2(2000),
+	VILCLI		VARCHAR2(2000),
+	PAYSCLI		VARCHAR2(2000),
+	MAILCLI		VARCHAR2(2000),
+	TELCLI		VARCHAR2(2000),
+	DATNAISCLI       VARCHAR2(2000),
+	DPREMCONTACTCLI  VARCHAR2(2000),
+	OBSCLI		VARCHAR2(2000),
+	REMCLI		VARCHAR2(2000),
+	GENRECLI	VARCHAR2(2000),
 	-- Descriptions des contraintes
 	CONSTRAINT PK_CLIENTS_TEST			    PRIMARY KEY(CODCLI),
 	--CONSTRAINT CK_CLIENTS_CIVCLI		CHECK(UPPER(CIVCLI)   IN ('MADEMOISELLE', 'MADAME', 'MONSIEUR')),
@@ -1161,285 +1217,161 @@ CREATE TABLE CLIENTS_TEST
 );
 
 
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C001', 'Madame', 'CLEM@ENT', 'EVE', 1, '18', 'BOULEVARD FOCH', '91000', 'EPINAY-SUR-ORGE', 'FRANCE','eve.clement@gmail.com', '+33777889911', '17-06-1951', '12-12-2012', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C002', 'Madame', 'LESEUL', 'M@RIE', 1, '17', 'AVENUE D ITALIE', '75013', 'PARIS', 'FRANCE','marieleseul@yahoo.fr', '0617586565', '05-08-1983', '05-08-1983', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C003', 'Madame', 'UNIQUE', 'Inès', 2, '77', 'RUE DE LA LIBERTE', '13001', 'MARCHEILLLE', 'FRANCE','munique@gmail.com', '+33717889922', '22-11-1969', '12-12-2012', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C004', 'Madame', 'CLEMENCE', 'EVELYNE', 4, '8 BIS', 'FOCH', '93800', 'EPINAY-SUR-SEINE', 'FRANCE','clemence evelyne@gmail.com', '+33777889933', '', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C005', 'Madam', 'FORT', 'anne marie', 3, '55', 'RUE DU JAPON', '94310', 'ORLY-VILLE', 'FRANCE','jfort\@hotmail.fr', '+33777889944', '11-11-2000', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C006', 'Mademoisele', 'LE BON', 'Clémence', 1, '18', 'BOULEVARD FOCH', '93800', 'EPINAY-SUR-SEINE', 'FRANCE','clemence.le bon@cfo.fr', '0033777889955', '16-10-1996', '18-10-2018', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C007', 'Mademoiselle', 'TRAIFOR', 'Alice', 2, '6', '    DE LA ROSIERE', '75015', 'PARIS', 'FRANCE','alice.traifor@yahoo.fr', '+33777889966', '23-02-1998', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C008', 'Monsieur', 'VIVANT', 'JEAN-BAPTISTE', 1, '13', 'RUE DE LA PAIX', '93800', 'EPINAY-SUR-SEINE', 'FRANCE','jeanbaptiste@', '0607', '17-09-1958', '17-09-2000', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C009', 'Monsieur', 'CLEMENCE', 'Alexandre', 1, '5', 'Rue De Belleville', '75019', 'PARIS', NULL,'alexandre.clemence@up13.fr', '+33149404071', '19-09-1999', '20-10-2020', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C010', 'Monsieur', 'TRAIFOR', 'Alexandre', 1, '17', 'AVENUE FOCH', '75016', 'PARIS', 'FRA','alexandre.traifor@up13.fr', '06070809', '17-07-1967', '17-09-2000', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C011', 'Monsiieur', 'PREMIER', 'JOS//EPH', 2, '77//', 'RUE// DE LA LIBERTE', '13001', 'MARCHEILLE', 'FRANCE','josef@premier', '+33777889977', '01-01-2000', '20-10-2020', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C012', 'Monsieur', 'CLEMENT', 'Adam', 2, '13', 'AVENUE JEAN BAPTISTE CLEMENT', '9430', 'VILLETANEUSE', 'FRANCE','adam.clement@gmail.com', '+33149404072', '19-06-2001', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C013', 'Monsieur', 'FORT', 'Gabriel', 5, '1', 'AVENUE DE CARTAGE', '99000', 'TUNIS', 'TUNISIE','gabriel.fort@yahoo.fr', '+21624801777', '05-05-1985', '17-09-2000', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C014', 'Monsieur', 'ADAM', 'ADAMO', 5, '1', 'AVENUE DE ROME', '99001', 'ROME', 'ITALIE','adamo.adamé@gmail com', '', '12-12-2000', '20-10-2020', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C015', 'Monsieur', 'Labsent', 'pala', 7, '1', 'rue des absents', '000', 'BAGDAD', 'IRAQ','pala-labsent@paici', '', '', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C016', 'Madame', 'obsolete', 'kadym', 7, '1', 'rue des anciens', '000', 'CARTHAGE', 'IFRIQIA','inexistant', 'inexistant', '', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C017', 'Madame', 'RAHYM', 'Karym', 1, '1', 'RUE DES GENTILS', '1000', 'CARTHAGE', 'TUNISIE','karym.rahym@gmail.com', '+21624808444', '01-01-1990', '05-01-2021', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C018', 'Madame', 'GENIE', 'ADAM', 6, '8', 'BOULEVARD FOCH', '93800', 'EPINAY SUR SEINE', 'FRANCE','adam.génie@gmail.com', '+33777889911', '01-01-1990', '11-11-2011', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C019', 'Madame', 'GENIE', 'GENIALE', 3, '16', 'AVENUE FOCH', '75016', 'PARIS', 'FRANCE','genialegenie@gmail.com', '+33777889900', '17-09-1988', '11-11-2011', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C020', 'Madame', 'GENIe', 'GENIAL', 3, '16', 'AVENUE FOCH', '75016', 'PARIS', 'FRENCE','genialegenie@gmail.com', '0777889900', '17-09-1988', '11-11-2011', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C021', 'Madame', 'LAPARISIENNE', 'Belle', 3, '26', 'AVENUE FOCH', '75016', 'PARIS', '','belle.laparisienne@gmail.com', '+33777889977', '17-09-1988', '11-11-2011', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C022', 'Mademoiselle', 'AFRICAINE', 'Belle', 9, '26', 'AVENUE FOCH', '75016', 'PARIS', '','belle.africaine@hotmail.com', '+33777889911', '17-09-1988', '11-11-2011', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C023', 'Mademoiselle', 'AFRICAINE', 'Belle', 9, '26', 'AVENUE FOCH', '75016', 'DAKAR', '','africaineb@gmail.com', '+33777889922', '17-09-1988', '11-11-2011', '', '', 'F');
+INSERT INTO CLIENTS_TEST (
+    CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, 
+    PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI
+)
+SELECT 
+    CODCLI, CIVCLI, NOMCLI, PRENCLI, 
+    TO_CHAR(CATCLI), 
+    ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, 
+    TO_CHAR(DATNAISCLI, 'YYYY-MM-DD'), 
+    TO_CHAR(DPREMCONTACTCLI, 'YYYY-MM-DD'), 
+    OBSCLI, REMCLI, GENRECLI
+FROM CLIENTS;
 
 COMMIT;
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C118', 'Madame', 'GENIE', 'Adam', 3, '8', 'BOULEVARD FOCH', '93800', '     EPINAY    SUR     SEINE', 'FRANCE','adam.génie@gmail.com', '+33777889911', '17-09-1988', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C119', 'MadamE', 'UNE', 'Marie', 6, '17', 'AVENUE D ITALIE', '75013', 'PARIS', '   FRANCE','marieune@gmail.com', '0617586575', '01-01-1991', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C120', 'MADAME', '1', 'MARIE', 1, '17', 'AVENUE D ITALIE', '75013', 'PARIS', 'FRANCE','MARIEUNE@GMAIL.COM', '0617586575', '01-01-1991', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C121', 'Monsieur', '2 PAR 2', 'Girard', 1, '27', 'AVENUE D ITALIE', '75013', 'PARIS', 'FRANCE','2PAR2@GMAIL.COM', '0617586577', '02-02-1982', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C122', 'Monsieur', 'DE PAR DE', 'GIRARD', 1, '27', 'AVENUE D-ITALIE', '75013', '     PARIS     ', 'FRANCE','2PAR2@GMAIL.COM', '0617586577', '02-02-1982', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C123', 'Monsieur', 'DE PAR DE', 'GIRARD', 1, '27', 'AVENUE D''ITALIE', '75013', '     PARIS     ', '   FRANCE       ','2PAR2@GMAIL.COM', '0617586577', '', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C124', 'Monsieur', 'DE    PAR       DE', 'Girard', 1, '27', 'AVENUE D_ITALIE', '75013', '     PARIS     ', 'FRANCE','2PAR2@GMAIL.COM', '0617586577', '02-02-1982', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C125', 'Monsieur', '       DE PAR DE', 'Girard', 1, '27', 'AVENUE D_ITALIE', '75013', '     PARIS     ', 'france','2PAR2@GMAIL.COM', '0617586577', '02-02-1982', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C126', 'Monsieur', '       DE PAR DE', 'Gir@rd', 1, '27', 'AVENUE@D_ITALIE/', '75013', '     paris     ', 'france','2PAR2@GMAIL.COM', '0617586577', '02-02-1982', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C127', 'Monsieur', 'SMITH', 'John', 1, '', '', '', 'LONDON', 'United-Kingdom','', '', '03-03-1983', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C128', 'Monsieur', 'BIDON', 'Jade', 1, '', '', '', 'LONDON', 'United-KINGDOM','', '', '17-07-1977', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C129', 'Monsieur', 'STOne', 'Brakeur', 1, '', '', '', 'LONDON', 'United-KINGDOM','', '', '18-08-1988', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C130', 'MADAM', 'STOne', 'Jane', 1, '', '', '', 'Oxford', 'United KINGDOM','', '', '', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C131', 'MONsieur', 'CATS', 'BiLL', 9, '', 'Maison Planchhhe', '', 'NEW-YORk', 'UNITED-STATS-AMERICA','', '', '17-09-1978', '', '', '', 'F');
-
-COMMIT;
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C295', 'MONSIEUr', 'MOUCHE', 'Gorge', 3, '-', '-', '-', 'L''Hay-Les-Roses', '-','usapresident@labas.com', '-', '02-02-1950', '20-01-1991', NULL, '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C296', 'MONSIEUR', 'MOUBARAK', 'OOObana', 3, '-', '-', '-', '-', '-', '-', '-', '15-05-1965', '20-01-2008', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C297', 'MADAME', 'CLEANTOOON', 'Hilally', 3, '-', '-', '-', '-', '-', '-', '-', '15-05-1966', '20-01-2016', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C298     ', 'monsieur', 'TROMPE.', 'Ronald', -3, '-', '-', '-', '-', '-','usapresident@labas.com', '-', '10-10-1945', '20-01-2016', NULL, '', NULL);
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('     C299', 'MONSIEUuR    ', 'BIDON!', 'Joie', 3, '-', '-', '-', '-', '-', '-', '-', '10-10-1941', '03-11-2020', '-', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C300', 'MONSIEUR', 'HOBAAAMA', 'M''Barek', 3, '-', '-', '-', '-', '-', '-', '-', '10-10-1985', '20-01-2008', '-', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C554', 'Monsieur', 'ALIBABA', 'Mystere', 1, '55', 'Rue De Belleville', '75019', 'PARIS', 'FRANCE','sezameouvretoi.alibaba.myster@gmail.com', '0697837311', '12-12-1992', '', '', '', 'F');
-
-INSERT INTO CLIENTS_TEST (CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI, DATNAISCLI, DPREMCONTACTCLI, OBSCLI, REMCLI, GENRECLI)
-VALUES ('C555', 'Madame', 'SMART', 'Data', 2, '55', 'RUE DE BELLEVILLE', '75019', 'PARIS', 'FRANCE','smartdata@gmail.com', '+33755555555', '', '', '', '', 'F');
-
-COMMIT;
-
-
-ALTER TABLE CLIENTS_TEST MODIFY CODCLI VARCHAR2(100);
-ALTER TABLE CLIENTS_TEST MODIFY CIVCLI VARCHAR2(100);
-ALTER TABLE CLIENTS_TEST MODIFY NOMCLI VARCHAR2(150);
-ALTER TABLE CLIENTS_TEST MODIFY MAILCLI VARCHAR2(150);
-ALTER TABLE CLIENTS_TEST MODIFY PRENCLI VARCHAR2(100);
-ALTER TABLE CLIENTS_TEST MODIFY CATCLI VARCHAR2(100);
-ALTER TABLE CLIENTS_TEST MODIFY ADNCLI VARCHAR2(100);
-ALTER TABLE CLIENTS_TEST MODIFY ADRCLI VARCHAR2(200);
-ALTER TABLE CLIENTS_TEST MODIFY CPCLI VARCHAR2(100);
-ALTER TABLE CLIENTS_TEST MODIFY VILCLI VARCHAR2(100);
-ALTER TABLE CLIENTS_TEST MODIFY PAYSCLI VARCHAR2(100);
-ALTER TABLE CLIENTS_TEST MODIFY TELCLI VARCHAR2(100);
-ALTER TABLE CLIENTS_TEST MODIFY GENRECLI VARCHAR2(100);
 
 ALTER TABLE CLIENTS_TEST DROP CONSTRAINT CK_CLIENTS_TEST_CATCLI;
+ALTER TABLE CLIENTS_TEST ADD GSCLI VARCHAR2(200);
+ALTER TABLE CLIENTS_TEST ADD KeyWordsCli VARCHAR2(300);
 
--- =========================================================
--- 1. BLOC AUTOMATISÉ INTRA-COLONNE (Version blindée)
--- =========================================================
+
 DECLARE
-    v_sql VARCHAR2(32767);
-    v_conditions VARCHAR2(32767);
+    v_sql VARCHAR2(30000);
+    v_conditions VARCHAR2(30000);
     v_constraint_expr META03_DD_CONSTRAINTS.CONTRAINTE%TYPE;
-    v_constraint_id VARCHAR2(20);
-    v_num_constraints NUMBER;
 BEGIN
-    FOR r_col IN (SELECT COLUMNNAME, NEGCONSTRAINTSINTRACOL 
-                  FROM META04_DD_DATASTRUCTURES1 
-                  WHERE DATASOURCENAME = 'CLIENTS' 
-                    AND NEGCONSTRAINTSINTRACOL IS NOT NULL) 
+    FOR r_col IN (SELECT DISTINCT COLUMNNAME 
+                  FROM DATASTRUCTURES1 d JOIN TEST t ON d.COLUMNNAME = t.COLNAME
+                  WHERE DATASOURCENAME = 'CLIENTS' ) 
     LOOP
-        v_conditions := '';
-        v_num_constraints := REGEXP_COUNT(r_col.NEGCONSTRAINTSINTRACOL, '-') + 1;
-        
-        FOR i IN 1..v_num_constraints LOOP
-            -- Le TRIM est crucial ici pour éviter les espaces fantômes
-            v_constraint_id := TRIM(REGEXP_SUBSTR(r_col.NEGCONSTRAINTSINTRACOL, '[^-]+', 1, i));
-            v_constraint_expr := NULL; 
-            
-            BEGIN
-                SELECT CONTRAINTE INTO v_constraint_expr 
-                FROM META03_DD_CONSTRAINTS 
-                WHERE IDCONSTRAINT = v_constraint_id;
-                
-                IF v_constraint_expr IS NOT NULL THEN
-                    v_constraint_expr := REPLACE(v_constraint_expr, 'COL++', r_col.COLUMNNAME);
-                    IF v_conditions IS NULL OR v_conditions = '' THEN
-                        v_conditions := v_constraint_expr;
-                    ELSE
-                        v_conditions := v_conditions || ' AND ' || v_constraint_expr;
-                    END IF;
-                END IF;
-            EXCEPTION
-                WHEN NO_DATA_FOUND THEN NULL;
-            END;
+        v_conditions := NULL;
+
+        FOR r_cst IN (
+            SELECT m.CONTRAINTE
+            FROM TEST t
+            JOIN META03_DD_CONSTRAINTS m ON t.IDCONTRAINTE = m.IDCONSTRAINT
+            WHERE t.COLNAME = r_col.COLUMNNAME
+        )
+        LOOP
+            v_constraint_expr := REPLACE(r_cst.CONTRAINTE, 'COL++', r_col.COLUMNNAME);
+            IF v_conditions IS NULL THEN
+                v_conditions := v_constraint_expr;
+            ELSE
+                v_conditions := v_conditions || ' AND ' || v_constraint_expr;
+            END IF;
         END LOOP;
         
-        IF TRIM(v_conditions) IS NOT NULL THEN
+        -- Si des conditions existent, on construit et exécute dynamiquement l'UPDATE
+        IF v_conditions IS NOT NULL THEN
             v_sql := 'UPDATE CLIENTS_TEST ' ||
                      'SET ' || r_col.COLUMNNAME || ' = ' || r_col.COLUMNNAME || ' || ''(<?!1ANOMALY>)'' ' ||
                      'WHERE NOT (' || v_conditions || ') ' ||
                      'AND ' || r_col.COLUMNNAME || ' NOT LIKE ''%(<?!1ANOMALY>)%'' ' ||
                      'AND ' || r_col.COLUMNNAME || ' IS NOT NULL';
-            BEGIN
-                EXECUTE IMMEDIATE v_sql;
-            EXCEPTION
-                WHEN OTHERS THEN
-                    DBMS_OUTPUT.PUT_LINE('⚠️ ERREUR IGNOREE (INTRA-COLONNE) sur : ' || r_col.COLUMNNAME || ' | Erreur : ' || SQLERRM);
-            END;
+            
+            EXECUTE IMMEDIATE v_sql;
         END IF;
     END LOOP;
     COMMIT;
 END;
 /
-/
 
 DECLARE
-    v_sql             VARCHAR2(30000);
+    v_sql VARCHAR2(30000);
     v_constraint_expr META03_DD_CONSTRAINTS.CONTRAINTE%TYPE;
-    v_col_name        VARCHAR2(50);
-    v_col_clean       VARCHAR2(500);
-    v_num_cols        NUMBER;
-    v_update_set      VARCHAR2(4000);
+    v_col_name VARCHAR2(50);
+    v_num_cols NUMBER;
+    v_update_set VARCHAR2(30000);
+    v_where_not_like VARCHAR2(30000);
 BEGIN
-    -- Parcours de chaque règle inter-colonnes (META04_DD_DATASTRUCTURES2)
-    FOR r_inter IN (SELECT COLUMNSA, NEGCONSTRAINTSINTERCOL
-                    FROM META04_DD_DATASTRUCTURES2
-                    WHERE DATASOURCENAME = 'CLIENTS'
-                      AND NEGCONSTRAINTSINTERCOL IS NOT NULL)
+    -- Parcours de chaque règle inter-colonnes
+    FOR r_inter IN (SELECT COLUMNSA, NEGCONSTRAINTSINTERCOL 
+                    FROM META04_DD_DATASTRUCTURES2 
+                    WHERE DATASOURCENAME = 'CLIENTS' 
+                      AND NEGCONSTRAINTSINTERCOL IS NOT NULL) 
     LOOP
         BEGIN
             -- Récupérer la condition inter-colonnes dans META03
-            SELECT CONTRAINTE INTO v_constraint_expr
-            FROM META03_DD_CONSTRAINTS
+            SELECT CONTRAINTE INTO v_constraint_expr 
+            FROM META03_DD_CONSTRAINTS 
             WHERE IDCONSTRAINT = r_inter.NEGCONSTRAINTSINTERCOL;
-
-            v_num_cols   := REGEXP_COUNT(r_inter.COLUMNSA, ',') + 1;
+            
+            v_num_cols := REGEXP_COUNT(r_inter.COLUMNSA, ',') + 1;
             v_update_set := '';
-
+            v_where_not_like := '';
+            
             FOR i IN 1..v_num_cols LOOP
-                -- Extraire le nom réel de la colonne (COL02_CIVCLI -> CIVCLI)
+                -- Extraire le segment complet (ex: COL02_CIVCLI)
                 v_col_name := REGEXP_SUBSTR(r_inter.COLUMNSA, '[^,]+', 1, i);
+                -- Ne garder que le nom réel de la colonne (ex: CIVCLI)
                 v_col_name := SUBSTR(v_col_name, INSTR(v_col_name, '_') + 1);
-
-                -- CHANGEMENT 1 : la condition est évaluée sur la valeur SANS les tags déjà posés
-                -- (sinon une règle qui a taguée CIVCLI empêche les autres règles de se déclencher)
-                v_col_clean := 'REGEXP_REPLACE(' || v_col_name || ', ''\(<\?![12]ANOMALY>\)'', '''')';
-                v_constraint_expr := REPLACE(v_constraint_expr, 'COL++' || i, v_col_clean);
-
-                -- CHANGEMENT 2 : on tague la cellule une seule fois (CASE) au lieu de filtrer dans le WHERE
-                IF v_update_set IS NOT NULL THEN
-                    v_update_set := v_update_set || ', ';
+                
+                -- Remplacer dynamiquement COL++1, COL++2...
+                v_constraint_expr := REPLACE(v_constraint_expr, 'COL++' || i, v_col_name);
+                
+                -- Préparer le SET de l'UPDATE (tagger toutes les colonnes impliquées)
+                IF v_update_set IS NULL THEN
+                    v_update_set := v_col_name || ' = ' || v_col_name || ' || ''(<?!2ANOMALY>)''';
+                    v_where_not_like := '(' || v_col_name || ' NOT LIKE ''%(<?!2ANOMALY>)%'' OR ' || v_col_name || ' IS NULL)';
+                ELSE
+                    v_update_set := v_update_set || ', ' || v_col_name || ' = ' || v_col_name || ' || ''(<?!2ANOMALY>)''';
+                    v_where_not_like := v_where_not_like || ' AND (' || v_col_name || ' NOT LIKE ''%(<?!2ANOMALY>)%'' OR ' || v_col_name || ' IS NULL)';
                 END IF;
-                v_update_set := v_update_set || v_col_name || ' = CASE WHEN ' || v_col_name ||
-                                ' LIKE ''%(<?!2ANOMALY>)%'' THEN ' || v_col_name ||
-                                ' ELSE ' || v_col_name || ' || ''(<?!2ANOMALY>)'' END';
             END LOOP;
-
-            v_sql := 'UPDATE CLIENTS_TEST SET ' || v_update_set ||
-                     ' WHERE NOT (' || v_constraint_expr || ')';
-
-            EXECUTE IMMEDIATE v_sql;
+            
+            -- Assemblage final et exécution
+            IF v_update_set IS NOT NULL THEN
+                v_sql := 'UPDATE CLIENTS_TEST ' ||
+                         'SET ' || v_update_set || ' ' ||
+                         'WHERE NOT (' || v_constraint_expr || ') ' ||
+                         'AND ' || v_where_not_like;
+                         
+                EXECUTE IMMEDIATE v_sql;
+            END IF;
         EXCEPTION
             WHEN NO_DATA_FOUND THEN NULL;
-            -- CHANGEMENT 3 : une règle en erreur est AFFICHÉE (et n'empêche plus les autres)
-            WHEN OTHERS THEN
-                DBMS_OUTPUT.PUT_LINE('ERREUR règle ' || r_inter.NEGCONSTRAINTSINTERCOL || ' : ' || SQLERRM);
         END;
     END LOOP;
     COMMIT;
 END;
 /
 
--- =====================================================================================
+SELECT *  FROM META01_DD_PARAMETRAGES WHERE ID_PARAMETRE = 'Param2';
+SELECT * FROM CLIENTS_TEST;
+
+--MISSING VALUES 
+DECLARE
+    v_sql VARCHAR2(30000);
+    v_conditions VARCHAR2(30000);
+    concat_elm VARCHAR2(2200);
+BEGIN
+
+    SELECT VALEUR_PARAM INTO v_conditions FROM META01_DD_PARAMETRAGES WHERE ID_PARAMETRE = 'Param2';
+    SELECT VALEUR_PARAM INTO concat_elm FROM META01_DD_PARAMETRAGES WHERE ID_PARAMETRE = 'Param3';
+
+    FOR r_col IN (SELECT DISTINCT COLUMNNAME 
+                  FROM META04_DD_DATASTRUCTURES1
+                  WHERE DATASOURCENAME = 'CLIENTS' AND DATATYPE NOT IN ('NUMBER', 'FLOAT') ) 
+    LOOP
+    
+        -- Si des conditions existent, on construit et exécute dynamiquement l'UPDATE
+        IF v_conditions IS NOT NULL THEN
+            v_sql := 'UPDATE CLIENTS_TEST ' ||
+                     'SET ' || r_col.COLUMNNAME || ' = ' || r_col.COLUMNNAME || ' || ''' || concat_elm || ''' ' ||
+                     'WHERE (' || r_col.COLUMNNAME || ' ' || v_conditions || ' OR ' || r_col.COLUMNNAME || ' IS NULL) ' ||
+                     'AND ('  || r_col.COLUMNNAME || ' NOT LIKE ''%' || concat_elm || '%'' ' ||  ' OR ' || r_col.COLUMNNAME || ' IS NULL) ';
+            DBMS_OUTPUT.PUT_LINE(v_sql);
+            EXECUTE IMMEDIATE v_sql;
+        END IF;
+    END LOOP;
+    COMMIT;
+END;
+/
+
+
 -- 1. REQUÊTE D'EXPORT EXCEL : QUALI-SCORE PAR LIGNE (TUPLE)
--- =====================================================================================
 WITH CALCUL_ANOMALIES AS (
     SELECT 
         c.*,
@@ -1467,9 +1399,7 @@ SELECT
     END AS QUALI_SCORE
 FROM CALCUL_ANOMALIES ca;
 
--- =====================================================================================
 -- 2. SCORE GLOBAL DE LA TABLE (POUR REPRODUIRE LE DIAPORAMA)
--- =====================================================================================
 SELECT 
     COUNT(*) * 17 AS NOMBRE_TOTAL_CASES,
     
@@ -1492,4 +1422,3 @@ SELECT
     , 2) AS SCORE_GLOBAL_POURCENT
 FROM CLIENTS_TEST;
 
-SELECT * FROM CLIENTS_TEST;

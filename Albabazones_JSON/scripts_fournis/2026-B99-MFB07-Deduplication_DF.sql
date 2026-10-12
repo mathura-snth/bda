@@ -4,9 +4,13 @@
 -- ==== MFB =======================================================================================================================
 -- Binome = Groupe de Travail N° xy  : Bxy (Exemple B01, B02,... B09, B10, B11...)
 -- ==== MFB =======================================================================================================================
--- Numéro du Binôme (= GroupeDeTravail) --->>>> : Bxy
--- NOM1 PRENOM1                         --->>>> : np1
--- NOM2 PRENOM2                         --->>>> : np2
+-- Numéro du Binôme (= GroupeDeTravail) --->>>> : B03
+-- SANTHALINGAM Mathura                 --->>>> : np1
+-- PARAKARAN Vidur                      --->>>> : np2
+-- BEN SALEM Tesnime                    --->>>> : np3
+-- CHARAF Hassan                        --->>>> : np4
+-- BENAMARA Amine                       --->>>> : np5
+-- CHARKI Omar                       --->>>> : np6
 
 -- ====>>> Vos fichiers sql devront s'appeler : Bxy-NomDuFichier.sql            (NomDuFichier = Deduplication)
 -- ==== MFB =======================================================================================================================
@@ -318,7 +322,23 @@ COMMIT;
 
 SET SERVEROUTPUT ON;
 -- ---->>>>>>> Première solution
-CREATE OR REPLACE PROCEDURE ELIMINEDOUBSIMIL (NOMTAB VARCHAR2, AttributsClé VARCHAR2, ListeTousAttributs VARCHAR2, SEUIL1 NUMBER, SEUIL2 NUMBER) IS
+
+DROP VIEW SimilarCouples;
+
+CREATE OR REPLACE VIEW SimilarCouples AS 
+SELECT 
+    CAST('x' AS VARCHAR2(4000)) K1, 
+    CAST('y' AS VARCHAR2(4000)) K2, 
+    0 EDS, 
+    0 JWS, 
+    0 QGRAM,
+    1 L1, 
+    1 L2, 
+    CAST('x' AS VARCHAR2(10)) STR1, 
+    CAST('y' AS VARCHAR2(10)) STR2 
+FROM DUAL;
+
+CREATE OR REPLACE PROCEDURE ELIMINEDOUBSIMIL (NOMTAB VARCHAR2, AttributsClé VARCHAR2, ListeTousAttributs VARCHAR2, SEUIL1 NUMBER, SEUIL2 NUMBER, SEUIL3 NUMBER) IS
 -- Procédure qui permet de :
 --           sauvegarder la table source de données dans S
 --           détecter certains doubles et/ou similaires : MATCH
@@ -348,10 +368,15 @@ BEGIN -- Début de la procédure ELIMINEDOUBSIMIL
   EXECUTE IMMEDIATE Query;
   -- Etape 2 : Création de la vue de nom AllComparisons qui contient toutes les comparaisons (produit cartésien des toutes les valeurs de NEWKEY)
   ------------ Calcul des distances de similarités (Algorithmes EDS+JWS)
-  Query := 'CREATE OR REPLACE VIEW AllComparisons(K1, K2, EDS, JWS, L1, L2, STR1, STR2) AS
+  
+  Query := 'DROP VIEW AllComparisons';
+  EXECUTE IMMEDIATE Query;
+
+  Query := 'CREATE OR REPLACE VIEW AllComparisons(K1, K2, EDS, JWS, QGRAM, L1, L2, STR1, STR2) AS
   SELECT N1.NEWKEY, N2.NEWKEY,
          UTL_MATCH.edit_distance_similarity(UPPER(N1.NEWKEY), UPPER(N2.NEWKEY)),
          UTL_MATCH.jaro_winkler_similarity(UPPER(N1.NEWKEY), UPPER(N2.NEWKEY)),
+         q_gram_similarity(UPPER(N1.NEWKEY), UPPER(N2.NEWKEY)),
 	     LENGTH(N1.NEWKEY), LENGTH(N2.NEWKEY), SUBSTR(N1.NEWKEY, 1, 3), SUBSTR(N2.NEWKEY, 1, 3) 
   FROM  ComparisonKeys N1, ComparisonKeys N2
   WHERE N1.NEWKEY < N2.NEWKEY '; 
@@ -359,11 +384,14 @@ BEGIN -- Début de la procédure ELIMINEDOUBSIMIL
   -- Etape 3 : Création de la vue de nom SimilarCouples qui contient les clés considérées similaires
   ------------ Les similarités (EDS+JWS) sont calculées par rapport à des seuils
   -- On construit les couples considérés similaires
-  Query := 'CREATE OR REPLACE VIEW SimilarKouples(K1, K2, EDS, JWS, L1, L2, STR1, STR2) AS 
-  ( SELECT K1, K2, EDS, JWS, L1, L2, STR1, STR2
-  FROM AllComparisons WHERE EDS > ' || SEUIL1 || ' AND JWS > ' || SEUIL2 || ' AND STR1 = STR2 )';
+  Query := 'DROP VIEW SimilarKouples';
   EXECUTE IMMEDIATE Query;
-  Query := 'CREATE OR REPLACE VIEW SimilarCouples(K1, K2, EDS, JWS, L1, L2, STR1, STR2) AS 
+
+  Query := 'CREATE OR REPLACE VIEW SimilarKouples(K1, K2, EDS, JWS, QGRAM, L1, L2, STR1, STR2) AS 
+  ( SELECT K1, K2, EDS, JWS, QGRAM, L1, L2, STR1, STR2
+  FROM AllComparisons WHERE EDS > ' || SEUIL1 || ' AND JWS > ' || SEUIL2 || ' AND QGRAM > ' || SEUIL3 || ' AND STR1 = STR2 )';
+  EXECUTE IMMEDIATE Query;
+  Query := 'CREATE OR REPLACE VIEW SimilarCouples(K1, K2, EDS, JWS, QGRAM, L1, L2, STR1, STR2) AS 
   ( SELECT DISTINCT * FROM SimilarKouples )';
   EXECUTE IMMEDIATE Query;
   -- On construit les lignes considérées similaires
@@ -402,9 +430,8 @@ SELECT * FROM AllComparisons;
 SELECT * FROM SimilarCouples;
 SELECT * FROM TheSimilarities ORDER BY 1;
 
-
 -- Tests !
-EXEC ELIMINEDOUBSIMIL('TOUSLESETUD', 'NOMETUD, PRENOMETUD, DATENAISETUD, VILLEETUD, PAYSETUD', 'NUMETUD, NOMETUD, PRENOMETUD, DATENAISETUD, VILLEETUD, PAYSETUD', 70, 70);
+EXEC ELIMINEDOUBSIMIL('TOUSLESETUD', 'NOMETUD, PRENOMETUD, DATENAISETUD, VILLEETUD, PAYSETUD', 'NUMETUD, NOMETUD, PRENOMETUD, DATENAISETUD, VILLEETUD, PAYSETUD', 70, 70,60);
 /*
 Procédure PL/SQL terminée.
 
@@ -423,14 +450,14 @@ Procédure PL/SQL terminée.
 */
 SELECT * FROM S;
 
-EXEC ELIMINEDOUBSIMIL('BIBLIOGRAPHIE', 'Title, Authors, Venue, Year', 'ID, Title, Authors, Venue, Year', 0, 70);
+EXEC ELIMINEDOUBSIMIL('BIBLIOGRAPHIE', 'Title, Authors, Venue, Year', 'ID, Title, Authors, Venue, Year', 0, 70,70);
 SELECT * FROM S;
 
-EXEC ELIMINEDOUBSIMIL('CLIENTSBis', 'CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI', 'CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI', 70, 70);
+EXEC ELIMINEDOUBSIMIL('CLIENTSBIS', 'CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI', 'CODCLI, CIVCLI, NOMCLI, PRENCLI, CATCLI, ADNCLI, ADRCLI, CPCLI, VILCLI, PAYSCLI, MAILCLI, TELCLI', 70, 70,70);
 
 SELECT * FROM S;
 
-EXEC ELIMINEDOUBSIMIL('TABCLI', 'COL2, COL3, COL4, COL5', 'COL1, COL2, COL3, COL4, COL5', 65, 65);
+EXEC ELIMINEDOUBSIMIL('TABCLI', 'COL2, COL3, COL4, COL5', 'COL1, COL2, COL3, COL4, COL5', 65, 65,70);
 SELECT * FROM S;
 
 -- =============================================================================== 
