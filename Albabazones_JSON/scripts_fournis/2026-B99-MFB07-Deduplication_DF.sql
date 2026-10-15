@@ -10,7 +10,6 @@
 -- BEN SALEM Tesnime                    --->>>> : np3
 -- CHARAF Hassan                        --->>>> : np4
 -- BENAMARA Amine                       --->>>> : np5
--- CHARKI Omar                       --->>>> : np6
 
 -- ====>>> Vos fichiers sql devront s'appeler : Bxy-NomDuFichier.sql            (NomDuFichier = Deduplication)
 -- ==== MFB =======================================================================================================================
@@ -192,6 +191,7 @@ SELECT Idval,
 	   UTL_MATCH.jaro_winkler(UPPER(valeur1), UPPER(valeur2)) JW,
 	   UTL_MATCH.jaro_winkler_similarity(UPPER(valeur1), UPPER(valeur2)) JWS,
      q_gram_similarity(UPPER(valeur1), UPPER(valeur2)) Q_GRAM,
+     cosine_sim,
 	   -- Se prononce comme
 	   SOUNDEX(UPPER(valeur1)) SON1, SOUNDEX(UPPER(valeur2)) SON2,
 	   UTL_MATCH.jaro_winkler_similarity(SOUNDEX(UPPER(valeur1)), SOUNDEX(UPPER(valeur2))) S1S2,
@@ -501,7 +501,6 @@ COMMIT;
 
 DROP TABLE TOUSLESETUD;
 CREATE TABLE TOUSLESETUD AS (SELECT * FROM ETUDIUTV UNION SELECT * FROM ETUDIG);
-
 --===========================================================================
 --->>> Détection et élimination des SIMILAIRES
 --===========================================================================
@@ -534,16 +533,50 @@ FROM V N1, V N2
 WHERE N1.NEWKEY < N2.NEWKEY ;
 -- Etape 3 : Calcul des distances de similarités (EDS+JWS)
 -- SELECT 'Les tuples/lignes assez proches (similaires à 80%) sont : ' FROM DUAL;
-CREATE OR REPLACE VIEW V2(K) AS
-( SELECT K1 FROM V1 WHERE EDS > 70 AND JWS > 70 
-UNION
-SELECT K2 FROM V1 WHERE EDS > 70 AND JWS > 70 );
+
+CREATE OR REPLACE VIEW V2(K1,K2) AS
+( SELECT K1,K2 FROM V1 WHERE EDS > 75 AND JWS > 75);
+
 
 SET LINES 1000
 SET PAGES 1000
 COLUMN K1 FORMAT A50
 COLUMN K2 FORMAT A50
-SELECT * FROM V2 ORDER BY 1;
+
+SELECT * FROM V;
+SELECT * FROM V2;
+DECLARE
+    NBRSIMIL NUMBER;
+    i        NUMBER := 0;
+    NOMTAB   VARCHAR2(30) := 'V2';
+    
+    CURSOR CurLigSim IS
+        SELECT K1, K2, LENGTH(K1) AS L1, LENGTH(K2) AS L2
+        FROM V2;
+BEGIN
+    SELECT COUNT(*) INTO NBRSIMIL FROM V2;  
+
+    IF NBRSIMIL > 0 THEN 
+
+        FOR LigSim IN CurLigSim LOOP
+            i := i + 1;
+
+            IF LigSim.L1 >= LigSim.L2 THEN  
+                DBMS_OUTPUT.PUT_LINE('         La clé à supprimer est K2  : ' || LigSim.K2);
+                --DELETE FROM V WHERE V.NEWKEY = LigSim.K2;
+            ELSE
+                DBMS_OUTPUT.PUT_LINE('         La clé à supprimer est K1 : ' || LigSim.K1);
+                --DELETE FROM V WHERE V.NEWKEY = LigSim.K1;
+            END IF;
+
+            DBMS_OUTPUT.PUT_LINE('     ');
+        END LOOP;
+    ELSE
+        DBMS_OUTPUT.PUT_LINE(' Désolé !, nous n avons pas trouvé de ligne(s) égale(s) ou similaire(s) dans la table ' || NOMTAB);
+    END IF;
+END;
+/
+
 /*
 Les tuples/lignes assez proches (similaires à 80%) sont : 
 View V2 créé(e).
