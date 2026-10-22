@@ -83,11 +83,11 @@ END; --remplacer_espace_par_tiret
 /
 
 -- Eventuellement plusieurs autres fonctions et/ou procédures afin réaliser la bonne intégration !
-CREATE OR REPLACE FUNCTION nomfonction(listeparamètres) RETURN typededonnée
+CREATE OR REPLACE FUNCTION nomfonction(listeparamètres IN VARCHAR2) RETURN NUMBER
 IS
 BEGIN
   -- commentaire
-  RETURN quelquechose_valeur;
+  RETURN 0;
 END;  -- nomfonction
 /
 
@@ -579,19 +579,26 @@ FIRSTNAME		,
 LASTTNAME		,
 POSITION		,
 COUNTRY_ORIGIN	,
-YEAROFBIRTH		
+YEAROFBIRTH,
+NB_OCC
 )
 AS SELECT
 'Bxy_T1_Joueurs'	,
 ID					,
 'M'					,
-INITCAP(Prenom)		,
-UPPER(NOM)			,
-Poste				,
-PaysDorigine		,
-Annee2Naissance		
+enlever_espaces_superflus(INITCAP(Prenom))	,
+enlever_espaces_superflus(UPPER(NOM))		,
+enlever_espaces_superflus(Poste)				,
+remplacer_espace_par_tiret(enlever_espaces_superflus(PaysDorigine))		,
+enlever_espaces_superflus(Annee2Naissance),
+ROW_NUMBER() OVER(PARTITION BY UPPER(enlever_espaces_superflus(NOM)), INITCAP(enlever_espaces_superflus(Prenom)) ORDER BY Annee2Naissance DESC) as num_ligne
 FROM Bxy_T1_Joueurs;
 
+DELETE FROM Bxy_S1_A WHERE NB_OCC > 1;
+ALTER TABLE Bxy_S1_A
+DROP COLUMN NB_OCC;
+
+UPDATE Bxy_S1_A SET COUNTRY_ORIGIN = 'États-Unis-d''Amérique' WHERE COUNTRY_ORIGIN = 'États-Unis';
 SELECT * FROM Bxy_S1_A;
 
 DROP TABLE Bxy_S1_B;
@@ -673,7 +680,7 @@ UPPER(COUNTRY_ORIGIN)	,
 YEAROFBIRTH		
 FROM Bxy_S1_C ;
 
-SELECT * FROM Bxy_S1 ;
+SELECT * FROM Bxy_S1;
 -- ==== MFB ==================== Table Bxy_S1 issue de la table Bxy_T1 ====================
 
 -- ==== MFB ==================== Table Bxy_S2 issue de la table Bxy_T2 ====================
